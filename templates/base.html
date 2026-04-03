@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>{% block title %}{{ site_settings.site_name }}{% endblock %}</title>
+    <meta name="description" content="{{ site_settings.site_description }}">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Custom Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    screens: {
+                        'xs': '480px',
+                    },
+                    colors: {
+                        forest: {
+                            50:  '#f0faf4',
+                            100: '#d9f3e4',
+                            200: '#b3e7c9',
+                            300: '#7dd4a8',
+                            400: '#45bb82',
+                            500: '#22a066',
+                            600: '#178050',
+                            700: '#136641',
+                            800: '#115234',
+                            900: '#0e4329',
+                            950: '#082b1a',
+                        },
+                        sage: {
+                            50:  '#f4f8f4',
+                            100: '#e7f0e8',
+                            200: '#cfe2d2',
+                            300: '#a8c9ad',
+                            400: '#7baa83',
+                            500: '#578c61',
+                            600: '#41704a',
+                            700: '#355a3d',
+                            800: '#2c4a33',
+                            900: '#243d2b',
+                        },
+                        mint: {
+                            50:  '#edfdf5',
+                            100: '#d2f9e6',
+                            200: '#a8f0ce',
+                            300: '#6fe2b2',
+                            400: '#34cc91',
+                            500: '#10b076',
+                            600: '#058f60',
+                            700: '#04724e',
+                            800: '#075a3f',
+                            900: '#064a34',
+                        },
+                        gold: {
+                            50:  '#fffdf0',
+                            100: '#fef9c3',
+                            200: '#fef08a',
+                            300: '#fde047',
+                            400: '#facc15',
+                            500: '#d4a017',
+                            600: '#b07d10',
+                            700: '#8c5e0d',
+                            800: '#704a10',
+                            900: '#5c3d10',
+                        },
+                        cream: {
+                            50:  '#fefdfb',
+                            100: '#fdf9f1',
+                            200: '#faf2e0',
+                            300: '#f5e7c5',
+                            400: '#eed49e',
+                            500: '#e4bc72',
+                            600: '#d49f4a',
+                        },
+                        charcoal: {
+                            50:  '#f6f7f8',
+                            100: '#eaecee',
+                            200: '#d2d6db',
+                            300: '#adb5be',
+                            400: '#808d9a',
+                            500: '#5f6e7c',
+                            600: '#4a5968',
+                            700: '#3c4a57',
+                            800: '#2d3843',
+                            900: '#1e2730',
+                            950: '#121920',
+                        }
+                    },
+                    fontFamily: {
+                        sans:    ['Inter', 'system-ui', 'sans-serif'],
+                        display: ['Plus Jakarta Sans', 'Poppins', 'sans-serif'],
+                        mono:    ['JetBrains Mono', 'monospace'],
+                    },
+                    boxShadow: {
+                        'soft':    '0 2px 15px -3px rgba(0,0,0,.07), 0 10px 20px -2px rgba(0,0,0,.04)',
+                        'card':    '0 1px 3px rgba(0,0,0,.04), 0 4px 12px rgba(0,0,0,.06)',
+                        'card-hover': '0 8px 30px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.06)',
+                        'nav':     '0 1px 0 0 rgba(0,0,0,.06), 0 4px 20px rgba(0,0,0,.04)',
+                        'dropdown': '0 10px 40px rgba(0,0,0,.12), 0 2px 10px rgba(0,0,0,.06)',
+                        'glow-green': '0 0 20px rgba(34,160,102,.25)',
+                    },
+                    backgroundImage: {
+                        'hero-gradient':   'linear-gradient(135deg, #0e4329 0%, #178050 40%, #22a066 70%, #45bb82 100%)',
+                        'card-gradient':   'linear-gradient(135deg, #f0faf4 0%, #edfdf5 100%)',
+                        'footer-gradient': 'linear-gradient(180deg, #1e2730 0%, #121920 100%)',
+                        'shimmer':         'linear-gradient(90deg, transparent 0%, rgba(255,255,255,.4) 50%, transparent 100%)',
+                        'green-mesh':      'radial-gradient(at 40% 20%, hsla(152,72%,30%,.2) 0, transparent 50%), radial-gradient(at 80% 0%, hsla(145,60%,45%,.15) 0, transparent 50%), radial-gradient(at 0% 50%, hsla(152,50%,20%,.1) 0, transparent 50%)',
+                    },
+                    borderRadius: {
+                        '2xl': '1rem',
+                        '3xl': '1.5rem',
+                        '4xl': '2rem',
+                    },
+                    animation: {
+                        'fade-in':    'fadeIn .4s ease forwards',
+                        'slide-down': 'slideDown .25s ease forwards',
+                        'pulse-slow': 'pulse 3s ease-in-out infinite',
+                        'shimmer':    'shimmer 2s infinite',
+                        'float':      'float 3s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        fadeIn:    { from: { opacity: '0', transform: 'translateY(8px)' }, to: { opacity: '1', transform: 'translateY(0)' } },
+                        slideDown: { from: { opacity: '0', transform: 'translateY(-6px)' }, to: { opacity: '1', transform: 'translateY(0)' } },
+                        shimmer:   { from: { backgroundPosition: '-200% 0' }, to: { backgroundPosition: '200% 0' } },
+                        float:     { '0%,100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-6px)' } },
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        /* ─── Reset & Base ─────────────────────────────────────── */
+        *, *::before, *::after { box-sizing: border-box; }
+
+        :root {
+            --forest-500:  #22a066;
+            --forest-600:  #178050;
+            --forest-700:  #136641;
+            --forest-900:  #0e4329;
+            --gold-400:    #facc15;
+            --gold-500:    #d4a017;
+            --cream-100:   #fdf9f1;
+            --charcoal-900:#1e2730;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            font-size: 0.9375rem;
+            background-color: #f8faf8;
+            color: #2d3843;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+
+        /* ─── Announcement Bar ──────────────────────────────────── */
+        #announcement-bar {
+            background: linear-gradient(90deg, var(--forest-900) 0%, var(--forest-700) 50%, var(--forest-900) 100%);
+            background-size: 200% 100%;
+            animation: shimmerBg 8s ease infinite;
+        }
+        @keyframes shimmerBg {
+            0%   { background-position: 0% 0; }
+            50%  { background-position: 100% 0; }
+            100% { background-position: 0% 0; }
+        }
+
+        /* ─── Navigation ────────────────────────────────────────── */
+        #main-nav {
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(34,160,102,.1);
+            box-shadow: 0 1px 0 rgba(0,0,0,.04), 0 4px 20px rgba(0,0,0,.04);
+            transition: all 0.3s ease;
+        }
+
+        #main-nav.scrolled {
+            box-shadow: 0 2px 20px rgba(0,0,0,.10);
+        }
+
+        /* Logo mark */
+        .logo-icon {
+            width: 38px; height: 38px;
+            background: linear-gradient(135deg, var(--forest-500), var(--forest-700));
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 3px 10px rgba(34,160,102,.35);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            flex-shrink: 0;
+        }
+        .logo-icon:hover { transform: scale(1.05); box-shadow: 0 5px 16px rgba(34,160,102,.45); }
+
+        /* Nav links */
+        .nav-link {
+            position: relative;
+            color: #3c4a57;
+            font-weight: 500;
+            font-size: 0.875rem;
+            padding: 0.375rem 0;
+            transition: color 0.2s ease;
+            white-space: nowrap;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px; left: 0;
+            width: 0; height: 2px;
+            background: var(--forest-500);
+            border-radius: 2px;
+            transition: width 0.25s ease;
+        }
+        .nav-link:hover { color: var(--forest-600); }
+        .nav-link:hover::after,
+        .nav-link.active::after { width: 100%; }
+        .nav-link.active { color: var(--forest-600); }
+
+        /* Desktop Dropdown */
+        .dropdown-panel {
+            position: absolute;
+            top: calc(100% + 12px);
+            left: 50%;
+            transform: translateX(-50%);
+            min-width: 210px;
+            background: white;
+            border-radius: 14px;
+            padding: 8px;
+            box-shadow: 0 10px 40px rgba(0,0,0,.12), 0 2px 10px rgba(0,0,0,.06);
+            border: 1px solid rgba(34,160,102,.1);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+            transform: translateX(-50%) translateY(-6px);
+            z-index: 100;
+        }
+        .dropdown-wrapper:hover .dropdown-panel,
+        .dropdown-wrapper:focus-within .dropdown-panel {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+        .dropdown-panel::before {
+            content: '';
+            position: absolute;
+            top: -6px; left: 50%;
+            transform: translateX(-50%);
+            width: 12px; height: 12px;
+            background: white;
+            border-top: 1px solid rgba(34,160,102,.1);
+            border-left: 1px solid rgba(34,160,102,.1);
+            transform: translateX(-50%) rotate(45deg);
+        }
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 14px;
+            border-radius: 9px;
+            color: #3c4a57;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            transition: background 0.15s, color 0.15s;
+            text-decoration: none;
+        }
+        .dropdown-item:hover {
+            background: #f0faf4;
+            color: var(--forest-600);
+        }
+        .dropdown-item .di-icon {
+            width: 28px; height: 28px;
+            background: #f0faf4;
+            border-radius: 7px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--forest-500);
+            font-size: 0.75rem;
+            flex-shrink: 0;
+            transition: background 0.15s;
+        }
+        .dropdown-item:hover .di-icon { background: #d9f3e4; }
+        .dropdown-divider { height: 1px; background: #f0f0f0; margin: 4px 0; }
+
+        /* Icon Buttons */
+        .icon-btn {
+            width: 38px; height: 38px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            color: #4a5968;
+            background: transparent;
+            transition: background 0.15s, color 0.15s, transform 0.15s;
+            position: relative;
+            flex-shrink: 0;
+        }
+        .icon-btn:hover { background: #f0faf4; color: var(--forest-600); transform: translateY(-1px); }
+        .icon-btn .badge {
+            position: absolute;
+            top: 2px; right: 2px;
+            min-width: 16px; height: 16px;
+            background: linear-gradient(135deg, #e53935, #c62828);
+            color: white;
+            font-size: 0.625rem;
+            font-weight: 700;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            padding: 0 3px;
+            border: 1.5px solid white;
+        }
+
+        /* CTA Button */
+        .btn-cta {
+            background: linear-gradient(135deg, var(--forest-500), var(--forest-700));
+            color: white;
+            font-weight: 600;
+            font-size: 0.8125rem;
+            padding: 0.5rem 1.125rem;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(34,160,102,.3);
+            white-space: nowrap;
+        }
+        .btn-cta:hover {
+            box-shadow: 0 4px 16px rgba(34,160,102,.45);
+            transform: translateY(-1px);
+        }
+        .btn-cta:active { transform: translateY(0); }
+
+        /* ─── Sold Badge ────────────────────────────────────────── */
+        .sold-badge {
+            position: absolute;
+            top: 10px; right: 10px;
+            background: linear-gradient(135deg, #e53935, #c62828);
+            color: white;
+            padding: 4px 11px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.7rem;
+            letter-spacing: .03em;
+            text-transform: uppercase;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(197,40,40,.35);
+        }
+
+        /* ─── Product / Dog Cards ───────────────────────────────── */
+        .product-card {
+            background: white;
+            border-radius: 18px;
+            overflow: hidden;
+            border: 1px solid rgba(34,160,102,.08);
+            box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 4px 12px rgba(0,0,0,.05);
+            transition: box-shadow 0.3s ease, transform 0.3s ease;
+        }
+        .product-card:hover {
+            box-shadow: 0 8px 32px rgba(0,0,0,.1), 0 2px 10px rgba(34,160,102,.12);
+            transform: translateY(-4px);
+        }
+        .product-card .card-img { overflow: hidden; }
+        .product-card .card-img img {
+            transition: transform 0.5s ease;
+        }
+        .product-card:hover .card-img img { transform: scale(1.07); }
+
+        /* Quick action overlay */
+        .card-actions {
+            position: absolute;
+            bottom: 12px; left: 50%;
+            transform: translateX(-50%) translateY(6px);
+            opacity: 0;
+            transition: all 0.25s ease;
+            display: flex; gap: 8px;
+        }
+        .product-card:hover .card-actions {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        .quick-btn {
+            width: 36px; height: 36px;
+            background: white;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            color: #3c4a57;
+            font-size: 0.8rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,.12);
+            transition: background 0.15s, color 0.15s;
+        }
+        .quick-btn:hover { background: var(--forest-500); color: white; }
+
+        /* ─── Section headings ──────────────────────────────────── */
+        .section-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            color: var(--forest-600);
+            background: #d9f3e4;
+            padding: 5px 12px;
+            border-radius: 50px;
+            margin-bottom: 0.75rem;
+        }
+        .section-eyebrow::before {
+            content: '';
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--forest-500);
+        }
+
+        .section-title {
+            font-size: clamp(1.5rem, 3vw, 2rem);
+            font-weight: 800;
+            color: var(--charcoal-900);
+            line-height: 1.2;
+        }
+
+        .section-subtitle {
+            color: #5f6e7c;
+            font-size: 0.9375rem;
+            max-width: 540px;
+        }
+
+        /* ─── Messages / Alerts ─────────────────────────────────── */
+        .alert {
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(0,0,0,.05);
+        }
+        .alert-success { background: #edfdf5; border: 1px solid #a8f0ce; color: #075a3f; }
+        .alert-error   { background: #fff5f5; border: 1px solid #fecaca; color: #7f1d1d; }
+        .alert-warning { background: #fffbeb; border: 1px solid #fde68a; color: #78350f; }
+        .alert-info    { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e3a5f; }
+        .alert-icon { margin-top: 1px; font-size: 0.9rem; flex-shrink: 0; }
+        .alert-close {
+            margin-left: auto;
+            background: none;
+            border: none;
+            color: inherit;
+            opacity: 0.5;
+            cursor: pointer;
+            padding: 0;
+            font-size: 0.9rem;
+            line-height: 1;
+            transition: opacity 0.15s;
+        }
+        .alert-close:hover { opacity: 1; }
+
+        /* ─── Mobile Menu ───────────────────────────────────────── */
+        #mobile-menu {
+            display: none;
+            position: fixed;
+            top: 0; right: 0; bottom: 0;
+            width: min(340px, 90vw);
+            background: white;
+            z-index: 200;
+            overflow-y: auto;
+            box-shadow: -8px 0 40px rgba(0,0,0,.15);
+            transition: transform 0.35s cubic-bezier(.4,0,.2,1);
+            transform: translateX(100%);
+        }
+        #mobile-menu.open {
+            display: block;
+            transform: translateX(0);
+        }
+        #mobile-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.45);
+            backdrop-filter: blur(3px);
+            z-index: 199;
+        }
+        #mobile-overlay.open { display: block; }
+
+        .mob-link {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 13px 20px;
+            color: #2d3843;
+            font-weight: 600;
+            font-size: 0.9375rem;
+            border-radius: 10px;
+            transition: background 0.15s, color 0.15s;
+            text-decoration: none;
+        }
+        .mob-link:hover { background: #f0faf4; color: var(--forest-600); }
+        .mob-sub { padding: 8px 20px 8px 40px; font-size: 0.875rem; font-weight: 500; }
+        .mob-sub:hover { background: #f0faf4; color: var(--forest-600); }
+
+        .mob-section { padding: 8px 12px; }
+        .mob-label {
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            color: #adb5be;
+            padding: 4px 10px 8px;
+        }
+
+        /* ─── Trust / Feature Badges ────────────────────────────── */
+        .trust-badge {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 20px;
+            background: white;
+            border-radius: 14px;
+            border: 1px solid rgba(34,160,102,.1);
+            box-shadow: 0 1px 4px rgba(0,0,0,.04);
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+        .trust-badge:hover {
+            box-shadow: 0 4px 16px rgba(34,160,102,.12);
+            transform: translateY(-2px);
+        }
+        .trust-badge-icon {
+            width: 42px; height: 42px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        /* ─── Newsletter ────────────────────────────────────────── */
+        .newsletter-input {
+            background: rgba(255,255,255,.12);
+            border: 1.5px solid rgba(255,255,255,.25);
+            border-radius: 12px;
+            color: white;
+            padding: 0.625rem 1rem;
+            font-size: 0.875rem;
+            width: 100%;
+            transition: border-color 0.2s;
+            outline: none;
+        }
+        .newsletter-input::placeholder { color: rgba(255,255,255,.55); }
+        .newsletter-input:focus { border-color: rgba(255,255,255,.6); background: rgba(255,255,255,.18); }
+
+        /* ─── Footer ────────────────────────────────────────────── */
+        #main-footer {
+            background: linear-gradient(180deg, #1a2530 0%, #111920 100%);
+        }
+        .footer-link {
+            color: #8095a8;
+            font-size: 0.875rem;
+            display: flex; align-items: center; gap: 7px;
+            text-decoration: none;
+            transition: color 0.2s;
+            padding: 3px 0;
+        }
+        .footer-link:hover { color: #a8f0ce; }
+        .footer-link::before {
+            content: '';
+            width: 4px; height: 4px;
+            border-radius: 50%;
+            background: var(--forest-500);
+            flex-shrink: 0;
+            opacity: 0.6;
+        }
+        .social-btn {
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            background: rgba(255,255,255,.07);
+            display: flex; align-items: center; justify-content: center;
+            color: #8095a8;
+            font-size: 0.875rem;
+            transition: background 0.2s, color 0.2s, transform 0.2s;
+        }
+        .social-btn:hover {
+            background: var(--forest-500);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* ─── Misc Utilities ─────────────────────────────────────── */
+        .tag-chip {
+            display: inline-flex; align-items: center; gap: 5px;
+            background: #f0faf4;
+            color: var(--forest-600);
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 50px;
+            border: 1px solid #b3e7c9;
+        }
+
+        .price-tag {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 800;
+            color: var(--forest-700);
+        }
+
+        .divider { height: 1px; background: linear-gradient(90deg, transparent, #e0eae0, transparent); }
+
+        /* Scroll progress bar */
+        #scroll-progress {
+            position: fixed;
+            top: 0; left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--forest-500), #45bb82, var(--gold-400));
+            z-index: 1000;
+            transition: width 0.1s linear;
+            width: 0%;
+        }
+
+        /* Back to top */
+        #back-to-top {
+            position: fixed;
+            bottom: 28px; right: 24px;
+            width: 44px; height: 44px;
+            background: linear-gradient(135deg, var(--forest-500), var(--forest-700));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(34,160,102,.4);
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.3s, transform 0.3s;
+            z-index: 150;
+        }
+        #back-to-top.visible { opacity: 1; transform: translateY(0); }
+        #back-to-top:hover { box-shadow: 0 6px 24px rgba(34,160,102,.55); transform: translateY(-2px); }
+
+        /* ─── Mobile Specifics ──────────────────────────────────── */
+        @media (max-width: 767px) {
+            .logo-icon { width: 34px; height: 34px; }
+        }
+
+        /* ─── Input Focus Ring ──────────────────────────────────── */
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(34,160,102,.2);
+        }
+
+        /* ─── Smooth skeleton shimmer ───────────────────────────── */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 8px;
+        }
+
+        /* Page transition */
+        main { animation: fadeIn .4s ease forwards; }
+
+        /* ─── Scrollbar ─────────────────────────────────────────── */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f0faf4; }
+        ::-webkit-scrollbar-thumb { background: #7dd4a8; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--forest-500); }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-[#f8faf8] text-charcoal-900">
+
+    <!-- ═══ Scroll Progress Bar ════════════════════════════════════ -->
+    <div id="scroll-progress"></div>
+
+    <!-- ═══ Announcement Bar ══════════════════════════════════════ -->
+    <div id="announcement-bar" class="text-white py-2 px-4 text-center relative overflow-hidden">
+        <div class="flex items-center justify-center gap-3 text-xs font-medium">
+            <span class="hidden sm:flex items-center gap-1.5">
+                <i class="fas fa-truck text-mint-300"></i>
+                <span class="text-forest-100">Free delivery on orders over $150</span>
+            </span>
+            <span class="hidden sm:block text-forest-400">·</span>
+            <span class="flex items-center gap-1.5">
+                <i class="fas fa-shield-alt text-mint-300"></i>
+                <span class="text-forest-100">Health guaranteed puppies</span>
+            </span>
+            <span class="hidden md:block text-forest-400">·</span>
+            <span class="hidden md:flex items-center gap-1.5">
+                <i class="fas fa-star text-gold-400"></i>
+                <span class="text-forest-100">Rated 4.9/5 by 2,000+ happy pet owners</span>
+            </span>
+        </div>
+        <button id="close-announcement" class="absolute right-3 top-1/2 -translate-y-1/2 text-forest-200 hover:text-white text-xs opacity-60 hover:opacity-100 transition-opacity">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+
+    <!-- ═══ Navigation ════════════════════════════════════════════ -->
+    <nav id="main-nav" class="sticky top-0 z-50">
+        <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-[68px] gap-4">
+
+                <!-- Logo -->
+                <a href="{% url 'home' %}" class="flex items-center gap-2.5 shrink-0 group">
+                    <div class="logo-icon">
+                        <i class="fas fa-paw text-white" style="font-size:1.05rem;"></i>
+                    </div>
+                    <div class="flex flex-col leading-tight">
+                        <span class="font-display font-800 text-[1.05rem] leading-snug text-forest-700 tracking-tight" style="font-weight:800;">{{ site_settings.site_name }}</span>
+                        <span class="text-[0.62rem] text-charcoal-400 font-medium tracking-wide hidden sm:block">Premium Pet Shop</span>
+                    </div>
+                </a>
+
+                <!-- Desktop Nav Links -->
+                <div class="hidden md:flex items-center gap-1 lg:gap-2">
+
+                    <a href="{% url 'home' %}" class="nav-link px-3 py-2 rounded-lg hover:bg-forest-50 transition-colors">Home</a>
+
+                    <!-- Dogs Dropdown -->
+                    <div class="dropdown-wrapper relative flex items-center">
+                        <a href="{% url 'dog_list' %}" class="nav-link px-3 py-2 rounded-lg hover:bg-forest-50 transition-colors flex items-center gap-1">
+                            Dogs
+                            <i class="fas fa-chevron-down text-[0.6rem] text-charcoal-400 transition-transform duration-200 group-hover:rotate-180"></i>
+                        </a>
+                        <div class="dropdown-panel">
+                            <a href="{% url 'dog_list' %}" class="dropdown-item">
+                                <span class="di-icon"><i class="fas fa-dog"></i></span>
+                                All Dogs
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            {% for category in breed_categories %}
+                            <a href="{% url 'breed_category_detail' category.slug %}" class="dropdown-item">
+                                <span class="di-icon"><i class="fas fa-paw"></i></span>
+                                {{ category.name }}
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Accessories Dropdown -->
+                    <div class="dropdown-wrapper relative flex items-center">
+                        <a href="{% url 'accessory_list' %}" class="nav-link px-3 py-2 rounded-lg hover:bg-forest-50 transition-colors flex items-center gap-1">
+                            Accessories
+                            <i class="fas fa-chevron-down text-[0.6rem] text-charcoal-400"></i>
+                        </a>
+                        <div class="dropdown-panel">
+                            <a href="{% url 'accessory_list' %}" class="dropdown-item">
+                                <span class="di-icon"><i class="fas fa-shopping-bag"></i></span>
+                                All Accessories
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            {% for category in accessory_categories %}
+                            <a href="{% url 'accessory_category_detail' category.slug %}" class="dropdown-item">
+                                <span class="di-icon"><i class="fas fa-tag"></i></span>
+                                {{ category.name }}
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <a href="{% url 'post_ad_list' %}" class="nav-link px-3 py-2 rounded-lg hover:bg-forest-50 transition-colors">Browse Ads</a>
+                    <a href="{% url 'about_us' %}" class="nav-link px-3 py-2 rounded-lg hover:bg-forest-50 transition-colors">About</a>
+                    <a href="{% url 'contact_us' %}" class="nav-link px-3 py-2 rounded-lg hover:bg-forest-50 transition-colors">Contact</a>
+                </div>
+
+                <!-- Right Action Icons -->
+                <div class="flex items-center gap-1">
+
+                    <!-- Search -->
+                    <a href="{% url 'dog_list' %}?search=" class="icon-btn" aria-label="Search">
+                        <i class="fas fa-search text-[0.875rem]"></i>
+                    </a>
+
+                    <!-- Cart -->
+                    <a href="{% url 'cart_view' %}" class="icon-btn" aria-label="Cart">
+                        <i class="fas fa-shopping-cart text-[0.875rem]"></i>
+                        {% if cart_count > 0 %}
+                        <span class="badge">{{ cart_count }}</span>
+                        {% endif %}
+                    </a>
+
+                    <!-- Wishlist (auth only) -->
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'wishlist_view' %}" class="icon-btn hidden xs:flex" aria-label="Wishlist">
+                        <i class="fas fa-heart text-[0.875rem]"></i>
+                    </a>
+                    {% endif %}
+
+                    <!-- User Menu (auth) -->
+                    {% if user.is_authenticated %}
+                    <div class="dropdown-wrapper relative flex items-center">
+                        <button class="icon-btn" aria-label="Account">
+                            <i class="fas fa-user-circle text-[1rem]"></i>
+                        </button>
+                        <div class="dropdown-panel" style="min-width:190px;">
+                            <div class="px-3 py-2 mb-1 border-b border-gray-100">
+                                <div class="text-[0.7rem] text-charcoal-400 font-medium">Signed in as</div>
+                                <div class="text-[0.8125rem] font-700 text-charcoal-800 truncate">{{ user.username }}</div>
+                            </div>
+                            <a href="{% url 'order_history' %}" class="dropdown-item">
+                                <span class="di-icon"><i class="fas fa-box"></i></span>
+                                My Orders
+                            </a>
+                            <a href="{% url 'my_ads' %}" class="dropdown-item">
+                                <span class="di-icon"><i class="fas fa-bullhorn"></i></span>
+                                My Ads
+                            </a>
+                            <a href="{% url 'post_ad_create' %}" class="dropdown-item">
+                                <span class="di-icon"><i class="fas fa-plus"></i></span>
+                                Post an Ad
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a href="{% url 'logout' %}" class="dropdown-item text-red-500 hover:bg-red-50">
+                                <span class="di-icon bg-red-50 text-red-400"><i class="fas fa-sign-out-alt"></i></span>
+                                Logout
+                            </a>
+                        </div>
+                    </div>
+
+                    {% else %}
+                    <!-- Login / Register -->
+                    <a href="{% url 'login' %}" class="hidden md:flex items-center gap-1.5 nav-link px-3 py-1.5 border border-forest-200 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors text-[0.8125rem]">
+                        <i class="fas fa-sign-in-alt text-[0.75rem]"></i>
+                        Login
+                    </a>
+                    <a href="{% url 'register' %}" class="hidden md:block btn-cta ml-1">
+                        Get Started
+                    </a>
+                    <!-- Mobile login icon -->
+                    <a href="{% url 'login' %}" class="md:hidden icon-btn" aria-label="Login">
+                        <i class="fas fa-sign-in-alt text-[0.875rem]"></i>
+                    </a>
+                    {% endif %}
+
+                    <!-- Mobile hamburger -->
+                    <button id="mobile-menu-btn" class="md:hidden icon-btn ml-1" aria-label="Open menu">
+                        <i class="fas fa-bars text-[0.9rem]"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ─── Sub-nav strip (optional breadcrumb / categories) ─── -->
+        <div class="hidden md:block border-t border-[rgba(34,160,102,.07)] bg-[#fafcfa]">
+            <div class="max-w-[1280px] mx-auto px-8 flex items-center gap-6 h-9 overflow-x-auto no-scrollbar">
+                <span class="text-[0.72rem] text-charcoal-400 font-semibold whitespace-nowrap uppercase tracking-wide">Browse:</span>
+                {% for category in breed_categories %}
+                <a href="{% url 'breed_category_detail' category.slug %}" class="text-[0.78rem] text-charcoal-500 hover:text-forest-600 font-medium whitespace-nowrap transition-colors">{{ category.name }}</a>
+                {% endfor %}
+                {% if accessory_categories %}
+                <span class="text-charcoal-200">|</span>
+                {% for category in accessory_categories %}
+                <a href="{% url 'accessory_category_detail' category.slug %}" class="text-[0.78rem] text-charcoal-500 hover:text-forest-600 font-medium whitespace-nowrap transition-colors">{{ category.name }}</a>
+                {% endfor %}
+                {% endif %}
+                <a href="{% url 'post_ad_list' %}" class="ml-auto text-[0.78rem] text-forest-600 hover:text-forest-700 font-semibold whitespace-nowrap flex items-center gap-1 shrink-0">
+                    <i class="fas fa-bolt text-[0.65rem]"></i>
+                    New Listings
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ═══ Mobile Overlay ════════════════════════════════════════ -->
+    <div id="mobile-overlay"></div>
+
+    <!-- ═══ Mobile Slide-in Menu ══════════════════════════════════ -->
+    <div id="mobile-menu" aria-hidden="true">
+        <!-- Header -->
+        <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+            <div class="flex items-center gap-2.5">
+                <div class="logo-icon" style="width:32px;height:32px;">
+                    <i class="fas fa-paw text-white" style="font-size:.85rem;"></i>
+                </div>
+                <span class="font-display font-800 text-forest-700 text-[0.95rem]" style="font-weight:800;">{{ site_settings.site_name }}</span>
+            </div>
+            <button id="mobile-close-btn" class="icon-btn" aria-label="Close menu">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Navigation -->
+        <div class="mob-section pt-3">
+            <div class="mob-label">Navigation</div>
+            <a href="{% url 'home' %}" class="mob-link">
+                <span class="flex items-center gap-2.5"><i class="fas fa-home w-4 text-forest-500"></i> Home</span>
+            </a>
+
+            <!-- Dogs accordion -->
+            <button class="mob-link w-full" data-mob-toggle="mob-dogs">
+                <span class="flex items-center gap-2.5"><i class="fas fa-dog w-4 text-forest-500"></i> Dogs</span>
+                <i class="fas fa-chevron-down text-[0.7rem] text-charcoal-400 transition-transform duration-200" id="mob-dogs-icon"></i>
+            </button>
+            <div id="mob-dogs" class="hidden">
+                <a href="{% url 'dog_list' %}" class="mob-link mob-sub">All Dogs</a>
+                {% for category in breed_categories %}
+                <a href="{% url 'breed_category_detail' category.slug %}" class="mob-link mob-sub">{{ category.name }}</a>
+                {% endfor %}
+            </div>
+
+            <!-- Accessories accordion -->
+            <button class="mob-link w-full" data-mob-toggle="mob-acc">
+                <span class="flex items-center gap-2.5"><i class="fas fa-shopping-bag w-4 text-forest-500"></i> Accessories</span>
+                <i class="fas fa-chevron-down text-[0.7rem] text-charcoal-400 transition-transform duration-200" id="mob-acc-icon"></i>
+            </button>
+            <div id="mob-acc" class="hidden">
+                <a href="{% url 'accessory_list' %}" class="mob-link mob-sub">All Accessories</a>
+                {% for category in accessory_categories %}
+                <a href="{% url 'accessory_category_detail' category.slug %}" class="mob-link mob-sub">{{ category.name }}</a>
+                {% endfor %}
+            </div>
+
+            <a href="{% url 'post_ad_list' %}" class="mob-link">
+                <span class="flex items-center gap-2.5"><i class="fas fa-bullhorn w-4 text-forest-500"></i> Browse Ads</span>
+            </a>
+            <a href="{% url 'about_us' %}" class="mob-link">
+                <span class="flex items-center gap-2.5"><i class="fas fa-info-circle w-4 text-forest-500"></i> About Us</span>
+            </a>
+            <a href="{% url 'contact_us' %}" class="mob-link">
+                <span class="flex items-center gap-2.5"><i class="fas fa-envelope w-4 text-forest-500"></i> Contact</span>
+            </a>
+        </div>
+
+        <!-- Auth section -->
+        <div class="mob-section border-t border-gray-100 mt-2 pt-2">
+            {% if user.is_authenticated %}
+            <div class="mob-label">Account — {{ user.username }}</div>
+            <a href="{% url 'order_history' %}" class="mob-link">
+                <span class="flex items-center gap-2.5"><i class="fas fa-box w-4 text-forest-500"></i> My Orders</span>
+            </a>
+            <a href="{% url 'my_ads' %}" class="mob-link">
+                <span class="flex items-center gap-2.5"><i class="fas fa-ad w-4 text-forest-500"></i> My Ads</span>
+            </a>
+            <a href="{% url 'wishlist_view' %}" class="mob-link">
+                <span class="flex items-center gap-2.5"><i class="fas fa-heart w-4 text-forest-500"></i> Wishlist</span>
+            </a>
+            <a href="{% url 'logout' %}" class="mob-link text-red-500">
+                <span class="flex items-center gap-2.5"><i class="fas fa-sign-out-alt w-4"></i> Logout</span>
+            </a>
+            {% else %}
+            <div class="px-4 py-3 flex flex-col gap-2">
+                <a href="{% url 'login' %}" class="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border-2 border-forest-500 text-forest-600 font-600 text-sm transition hover:bg-forest-50">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </a>
+                <a href="{% url 'register' %}" class="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-gradient-to-r from-forest-500 to-forest-700 text-white font-600 text-sm shadow-md">
+                    <i class="fas fa-user-plus"></i> Create Account
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Contact quick links -->
+        <div class="mob-section border-t border-gray-100 mt-2 pt-2 pb-6">
+            <div class="mob-label">Get in Touch</div>
+            <div class="px-4 py-2 flex flex-col gap-2">
+                <a href="tel:{{ site_settings.phone }}" class="flex items-center gap-2.5 text-sm text-charcoal-600 hover:text-forest-600 transition-colors font-medium">
+                    <i class="fas fa-phone text-forest-500 w-4"></i> {{ site_settings.phone }}
+                </a>
+                <a href="mailto:{{ site_settings.email }}" class="flex items-center gap-2.5 text-sm text-charcoal-600 hover:text-forest-600 transition-colors font-medium">
+                    <i class="fas fa-envelope text-forest-500 w-4"></i> {{ site_settings.email }}
+                </a>
+                {% if site_settings.whatsapp %}
+                <a href="https://wa.me/{{ site_settings.whatsapp }}" target="_blank" class="flex items-center gap-2.5 text-sm text-charcoal-600 hover:text-forest-600 transition-colors font-medium">
+                    <i class="fab fa-whatsapp text-forest-500 w-4"></i> WhatsApp Us
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ Flash Messages ════════════════════════════════════════ -->
+    {% if messages %}
+    <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 pt-4" id="flash-messages">
+        {% for message in messages %}
+        <div class="alert {% if message.tags == 'error' %}alert-error{% elif message.tags == 'success' %}alert-success{% elif message.tags == 'warning' %}alert-warning{% else %}alert-info{% endif %}">
+            <span class="alert-icon">
+                {% if message.tags == 'error' %}<i class="fas fa-times-circle"></i>
+                {% elif message.tags == 'success' %}<i class="fas fa-check-circle"></i>
+                {% elif message.tags == 'warning' %}<i class="fas fa-exclamation-triangle"></i>
+                {% else %}<i class="fas fa-info-circle"></i>{% endif %}
+            </span>
+            <span>{{ message }}</span>
+            <button class="alert-close" onclick="this.closest('.alert').remove()"><i class="fas fa-times"></i></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- ═══ Main Content ══════════════════════════════════════════ -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- ═══ Trust Badges Strip ════════════════════════════════════ -->
+    <section class="bg-white border-y border-[rgba(34,160,102,.08)] py-8">
+        <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="trust-badge">
+                    <div class="trust-badge-icon bg-forest-50 text-forest-500"><i class="fas fa-shield-alt"></i></div>
+                    <div>
+                        <div class="font-700 text-[0.875rem] text-charcoal-800" style="font-weight:700">Health Guarantee</div>
+                        <div class="text-[0.78rem] text-charcoal-400 mt-0.5">Every puppy vet-checked</div>
+                    </div>
+                </div>
+                <div class="trust-badge">
+                    <div class="trust-badge-icon bg-mint-50 text-mint-600"><i class="fas fa-truck"></i></div>
+                    <div>
+                        <div class="font-700 text-[0.875rem] text-charcoal-800" style="font-weight:700">Safe Delivery</div>
+                        <div class="text-[0.78rem] text-charcoal-400 mt-0.5">Door-to-door with care</div>
+                    </div>
+                </div>
+                <div class="trust-badge">
+                    <div class="trust-badge-icon bg-gold-50 text-gold-500"><i class="fas fa-star"></i></div>
+                    <div>
+                        <div class="font-700 text-[0.875rem] text-charcoal-800" style="font-weight:700">4.9/5 Rating</div>
+                        <div class="text-[0.78rem] text-charcoal-400 mt-0.5">2,000+ happy customers</div>
+                    </div>
+                </div>
+                <div class="trust-badge">
+                    <div class="trust-badge-icon bg-sage-50 text-sage-600"><i class="fas fa-headset"></i></div>
+                    <div>
+                        <div class="font-700 text-[0.875rem] text-charcoal-800" style="font-weight:700">24/7 Support</div>
+                        <div class="text-[0.78rem] text-charcoal-400 mt-0.5">Always here to help</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ Footer ════════════════════════════════════════════════ -->
+    <footer id="main-footer" class="text-white">
+        <!-- Top wave divider -->
+        <div class="h-1 bg-gradient-to-r from-forest-900 via-forest-500 to-mint-400"></div>
+
+        <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10">
+
+                <!-- Brand column (2 cols) -->
+                <div class="lg:col-span-2">
+                    <div class="flex items-center gap-2.5 mb-4">
+                        <div class="logo-icon" style="width:40px;height:40px;background:linear-gradient(135deg,#22a066,#0e4329);">
+                            <i class="fas fa-paw text-white" style="font-size:1.1rem;"></i>
+                        </div>
+                        <span class="font-display text-white text-xl" style="font-weight:800;">{{ site_settings.site_name }}</span>
+                    </div>
+                    <p class="text-[#8095a8] text-[0.875rem] leading-relaxed mb-5 max-w-xs">{{ site_settings.site_tagline }}</p>
+
+                    <!-- Social links -->
+                    <div class="flex items-center gap-2 mb-6">
+                        {% if site_settings.facebook_url %}
+                        <a href="{{ site_settings.facebook_url }}" target="_blank" class="social-btn" aria-label="Facebook">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        {% endif %}
+                        {% if site_settings.instagram_url %}
+                        <a href="{{ site_settings.instagram_url }}" target="_blank" class="social-btn" aria-label="Instagram">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        {% endif %}
+                        {% if site_settings.twitter_url %}
+                        <a href="{{ site_settings.twitter_url }}" target="_blank" class="social-btn" aria-label="Twitter / X">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        {% endif %}
+                        {% if site_settings.youtube_url %}
+                        <a href="{{ site_settings.youtube_url }}" target="_blank" class="social-btn" aria-label="YouTube">
+                            <i class="fab fa-youtube"></i>
+                        </a>
+                        {% endif %}
+                        {% if site_settings.whatsapp %}
+                        <a href="https://wa.me/{{ site_settings.whatsapp }}" target="_blank" class="social-btn" aria-label="WhatsApp">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+
+                    <!-- Newsletter -->
+                    <div>
+                        <p class="text-[0.78rem] font-600 text-[#c5d8cd] uppercase tracking-wider mb-2" style="font-weight:600;">Stay Updated</p>
+                        <form method="post" action="{% url 'newsletter_subscribe' %}" class="flex gap-2">
+                            {% csrf_token %}
+                            <input type="email" name="email" placeholder="Your email address…" required class="newsletter-input flex-1 min-w-0">
+                            <button type="submit" class="bg-forest-500 hover:bg-forest-400 text-white font-600 text-[0.8125rem] px-4 py-2 rounded-xl transition-colors shrink-0" style="font-weight:600;">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </form>
+                        <p class="text-[0.72rem] text-[#5a7060] mt-2">No spam. Unsubscribe any time.</p>
+                    </div>
+                </div>
+
+                <!-- Shop Links -->
+                <div>
+                    <h4 class="text-white font-700 text-[0.875rem] uppercase tracking-wider mb-4" style="font-weight:700;">Shop</h4>
+                    <ul class="space-y-1.5">
+                        <li><a href="{% url 'dog_list' %}" class="footer-link">Browse Dogs</a></li>
+                        <li><a href="{% url 'accessory_list' %}" class="footer-link">Accessories</a></li>
+                        <li><a href="{% url 'post_ad_list' %}" class="footer-link">Browse Ads</a></li>
+                        <li><a href="{% url 'post_ad_create' %}" class="footer-link">Post an Ad</a></li>
+                        <li><a href="{% url 'cart_view' %}" class="footer-link">Shopping Cart</a></li>
+                    </ul>
+                </div>
+
+                <!-- Company Links -->
+                <div>
+                    <h4 class="text-white font-700 text-[0.875rem] uppercase tracking-wider mb-4" style="font-weight:700;">Company</h4>
+                    <ul class="space-y-1.5">
+                        <li><a href="{% url 'about_us' %}" class="footer-link">About Us</a></li>
+                        <li><a href="{% url 'contact_us' %}" class="footer-link">Contact</a></li>
+                        <li><a href="#" class="footer-link">Privacy Policy</a></li>
+                        <li><a href="#" class="footer-link">Terms of Service</a></li>
+                        <li><a href="#" class="footer-link">Shipping Policy</a></li>
+                    </ul>
+                </div>
+
+                <!-- Contact Info -->
+                <div>
+                    <h4 class="text-white font-700 text-[0.875rem] uppercase tracking-wider mb-4" style="font-weight:700;">Contact</h4>
+                    <ul class="space-y-3">
+                        <li>
+                            <a href="mailto:{{ site_settings.email }}" class="flex items-start gap-2.5 text-[#8095a8] hover:text-[#a8f0ce] text-[0.875rem] transition-colors">
+                                <i class="fas fa-envelope mt-0.5 text-forest-400 shrink-0"></i>
+                                {{ site_settings.email }}
+                            </a>
+                        </li>
+                        <li>
+                            <a href="tel:{{ site_settings.phone }}" class="flex items-start gap-2.5 text-[#8095a8] hover:text-[#a8f0ce] text-[0.875rem] transition-colors">
+                                <i class="fas fa-phone mt-0.5 text-forest-400 shrink-0"></i>
+                                {{ site_settings.phone }}
+                            </a>
+                        </li>
+                        {% if site_settings.whatsapp %}
+                        <li>
+                            <a href="https://wa.me/{{ site_settings.whatsapp }}" target="_blank" class="flex items-start gap-2.5 text-[#8095a8] hover:text-[#a8f0ce] text-[0.875rem] transition-colors">
+                                <i class="fab fa-whatsapp mt-0.5 text-forest-400 shrink-0"></i>
+                                WhatsApp Us
+                            </a>
+                        </li>
+                        {% endif %}
+                        <li>
+                            <a href="sms:{{ site_settings.phone }}" class="flex items-start gap-2.5 text-[#8095a8] hover:text-[#a8f0ce] text-[0.875rem] transition-colors">
+                                <i class="fas fa-sms mt-0.5 text-forest-400 shrink-0"></i>
+                                Send SMS
+                            </a>
+                        </li>
+                    </ul>
+
+                    <!-- Open hours badge -->
+                    <div class="mt-5 flex items-center gap-2 bg-[rgba(34,160,102,.12)] rounded-xl px-3 py-2.5">
+                        <div class="w-2 h-2 rounded-full bg-mint-400 animate-pulse-slow shrink-0"></div>
+                        <span class="text-[0.78rem] text-[#a0c8ac] font-medium">We're open Mon–Sat, 8am–6pm</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Divider -->
+            <div class="divider my-8" style="background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);"></div>
+
+            <!-- Bottom bar -->
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                <p class="text-[#5a7060] text-[0.8rem]">{{ site_settings.footer_text }}</p>
+
+                <!-- Payment Icons -->
+                <div class="flex items-center gap-3">
+                    <span class="text-[#3d5045] text-[0.72rem] font-600 uppercase tracking-wider" style="font-weight:600;">Secure payments</span>
+                    {% if site_settings.show_visa %}
+                    <div class="bg-white rounded-md px-2 py-1 flex items-center">
+                        <i class="fab fa-cc-visa text-[#1a1f71] text-xl"></i>
+                    </div>
+                    {% endif %}
+                    {% if site_settings.show_mastercard %}
+                    <div class="bg-white rounded-md px-2 py-1 flex items-center">
+                        <i class="fab fa-cc-mastercard text-[#eb001b] text-xl"></i>
+                    </div>
+                    {% endif %}
+                    {% if site_settings.show_paypal %}
+                    <div class="bg-white rounded-md px-2 py-1 flex items-center">
+                        <i class="fab fa-cc-paypal text-[#003087] text-xl"></i>
+                    </div>
+                    {% endif %}
+                    {% if site_settings.show_amex %}
+                    <div class="bg-white rounded-md px-2 py-1 flex items-center">
+                        <i class="fab fa-cc-amex text-[#007bc1] text-xl"></i>
+                    </div>
+                    {% endif %}
+                    <!-- SSL badge -->
+                    <div class="flex items-center gap-1 text-[#3d5045] text-[0.72rem]">
+                        <i class="fas fa-lock text-forest-400"></i>
+                        <span>SSL Secured</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ═══ Back to Top Button ════════════════════════════════════ -->
+    <button id="back-to-top" aria-label="Back to top" title="Back to top">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- ═══ Tawk.to Chat ══════════════════════════════════════════ -->
+    {% if site_settings.tawk_property_id and site_settings.tawk_widget_id %}
+    <script type="text/javascript">
+        var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+        (function(){
+            var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+            s1.async=true;
+            s1.src='https://embed.tawk.to/{{ site_settings.tawk_property_id }}/{{ site_settings.tawk_widget_id }}';
+            s1.charset='UTF-8';
+            s1.setAttribute('crossorigin','*');
+            s0.parentNode.insertBefore(s1,s0);
+        })();
+    </script>
+    {% endif %}
+
+    <!-- ═══ Scripts ═══════════════════════════════════════════════ -->
+    <script>
+    (function() {
+        'use strict';
+
+        // ── Announcement bar close ─────────────────────────────
+        const annClose = document.getElementById('close-announcement');
+        const annBar   = document.getElementById('announcement-bar');
+        if (annClose && annBar) {
+            annClose.addEventListener('click', () => {
+                annBar.style.transition = 'max-height .3s ease, opacity .3s ease, padding .3s ease';
+                annBar.style.overflow   = 'hidden';
+                annBar.style.maxHeight  = annBar.scrollHeight + 'px';
+                requestAnimationFrame(() => {
+                    annBar.style.maxHeight = '0';
+                    annBar.style.opacity   = '0';
+                    annBar.style.paddingTop    = '0';
+                    annBar.style.paddingBottom = '0';
+                });
+                setTimeout(() => annBar.remove(), 350);
+            });
+        }
+
+        // ── Scroll progress bar ───────────────────────────────
+        const progressBar = document.getElementById('scroll-progress');
+        function updateProgress() {
+            const scrollTop  = window.scrollY;
+            const docHeight  = document.documentElement.scrollHeight - window.innerHeight;
+            const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+            if (progressBar) progressBar.style.width = pct + '%';
+        }
+
+        // ── Nav scroll shadow ─────────────────────────────────
+        const mainNav = document.getElementById('main-nav');
+        function onScroll() {
+            updateProgress();
+            if (mainNav) mainNav.classList.toggle('scrolled', window.scrollY > 20);
+            const btt = document.getElementById('back-to-top');
+            if (btt) btt.classList.toggle('visible', window.scrollY > 400);
+        }
+        window.addEventListener('scroll', onScroll, { passive: true });
+
+        // ── Back to top ───────────────────────────────────────
+        const btt = document.getElementById('back-to-top');
+        if (btt) {
+            btt.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+        }
+
+        // ── Mobile menu ────────────────────────────────────────
+        const menuBtn    = document.getElementById('mobile-menu-btn');
+        const closeBtn   = document.getElementById('mobile-close-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const overlay    = document.getElementById('mobile-overlay');
+
+        function openMenu() {
+            mobileMenu.classList.add('open');
+            overlay.classList.add('open');
+            mobileMenu.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+            if (menuBtn) menuBtn.querySelector('i').className = 'fas fa-times text-[0.9rem]';
+        }
+        function closeMenu() {
+            mobileMenu.classList.remove('open');
+            overlay.classList.remove('open');
+            mobileMenu.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+            if (menuBtn) menuBtn.querySelector('i').className = 'fas fa-bars text-[0.9rem]';
+        }
+
+        if (menuBtn)  menuBtn.addEventListener('click', openMenu);
+        if (closeBtn) closeBtn.addEventListener('click', closeMenu);
+        if (overlay)  overlay.addEventListener('click', closeMenu);
+
+        // Mobile accordion toggles
+        document.querySelectorAll('[data-mob-toggle]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const targetId = this.dataset.mobToggle;
+                const target   = document.getElementById(targetId);
+                const iconId   = targetId + '-icon';
+                const icon     = document.getElementById(iconId);
+                if (!target) return;
+                const isHidden = target.classList.contains('hidden');
+                target.classList.toggle('hidden', !isHidden);
+                if (icon) icon.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+            });
+        });
+
+        // Close menu on resize to desktop
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 768) closeMenu();
+        });
+
+        // Auto-dismiss flash messages after 6s
+        setTimeout(() => {
+            document.querySelectorAll('.alert').forEach(el => {
+                el.style.transition = 'opacity .4s ease, max-height .4s ease';
+                el.style.overflow   = 'hidden';
+                el.style.maxHeight  = el.scrollHeight + 'px';
+                requestAnimationFrame(() => {
+                    el.style.opacity   = '0';
+                    el.style.maxHeight = '0';
+                });
+                setTimeout(() => el.remove(), 450);
+            });
+        }, 6000);
+
+    })();
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

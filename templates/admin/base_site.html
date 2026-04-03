@@ -1,0 +1,23 @@
+{% extends "admin/base.html" %}
+
+{% block extrajs %}
+{{ block.super }}
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    function showTab() {
+        const hash = window.location.hash;
+        if (!hash) return;
+
+        const el = document.querySelector(`a[href="${hash}"]`);
+        if (el && window.jQuery) {
+            window.jQuery(el).tab('show');
+        }
+    }
+
+    showTab();
+    window.addEventListener("hashchange", showTab);
+});
+</script>
+
+{% endblock %}

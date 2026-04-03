@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Order Notification</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Arial', sans-serif; background-color: #f5f5f4;">
+    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f5f5f4; padding: 40px 20px;">
+        <tr>
+            <td align="center">
+                <table cellpadding="0" cellspacing="0" border="0" width="600" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #0ba5e9 0%, #0369a1 100%); padding: 40px 30px; text-align: center;">
+                            <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: bold;">
+                                🔔 New Order Received!
+                            </h1>
+                            <p style="margin: 10px 0 0 0; color: #ffffff; font-size: 16px; opacity: 0.9;">
+                                A customer has placed a new order
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Order Number -->
+                    <tr>
+                        <td style="padding: 30px; background-color: #dcfce7; border-bottom: 3px solid #22c55e;">
+                            <table width="100%">
+                                <tr>
+                                    <td style="text-align: center;">
+                                        <p style="margin: 0; color: #166534; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Order Number</p>
+                                        <h2 style="margin: 8px 0 0 0; color: #15803d; font-size: 28px; font-weight: bold;">
+                                            #{{ order.order_number }}
+                                        </h2>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- Order Summary -->
+                    <tr>
+                        <td style="padding: 30px;">
+                            <h3 style="margin: 0 0 20px 0; color: #292524; font-size: 20px; font-weight: bold;">
+                                Order Summary
+                            </h3>
+                            
+                            <table width="100%" cellpadding="10" cellspacing="0" border="0" style="background-color: #fafaf9; border-radius: 8px;">
+                                <tr>
+                                    <td style="border-bottom: 1px solid #e7e5e4; padding: 15px;">
+                                        <strong style="color: #292524;">Order Date:</strong>
+                                        <span style="color: #57534e; float: right;">{{ order.created_at|date:"F d, Y - g:i A" }}</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="border-bottom: 1px solid #e7e5e4; padding: 15px;">
+                                        <strong style="color: #292524;">Order Status:</strong>
+                                        <span style="color: #57534e; float: right;">{{ order.get_status_display }}</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="border-bottom: 1px solid #e7e5e4; padding: 15px;">
+                                        <strong style="color: #292524;">Total Amount:</strong>
+                                        <span style="color: #15803d; font-weight: bold; font-size: 18px; float: right;">${{ order.total_amount }}</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 15px;">
+                                        <strong style="color: #292524;">Payment Status:</strong>
+                                        <span style="color: {% if order.payment_confirmed %}#15803d{% else %}#dc2626{% endif %}; float: right; font-weight: bold;">
+                                            {% if order.payment_confirmed %}✓ Confirmed{% else %}⚠ Pending{% endif %}
+                                        </span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- Customer Information -->
+                    <tr>
+                        <td style="padding: 0 30px 30px 30px;">
+                            <h3 style="margin: 0 0 20px 0; color: #292524; font-size: 20px; font-weight: bold;">
+                                Customer Information
+                            </h3>
+                            
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #e0f2fe; border-radius: 8px; padding: 20px; border-left: 4px solid #0ba5e9;">
+                                <tr>
+                                    <td>
+                                        <p style="margin: 0 0 10px 0; color: #292524; font-size: 15px;">
+                                            <strong>Name:</strong> {{ order.full_name }}
+                                        </p>
+                                        <p style="margin: 0 0 10px 0; color: #292524; font-size: 15px;">
+                                            <strong>Email:</strong> <a href="mailto:{{ order.email }}" style="color: #0369a1; text-decoration: none;">{{ order.email }}</a>
+                                        </p>
+                                        <p style="margin: 0 0 10px 0; color: #292524; font-size: 15px;">
+                                            <strong>Phone:</strong> <a href="tel:{{ order.phone }}" style="color: #0369a1; text-decoration: none;">{{ order.phone }}</a>
+                                        </p>
+                                        {% if order.user %}
+                                        <p style="margin: 0; color: #292524; font-size: 15px;">
+                                            <strong>User Account:</strong> {{ order.user.username }}
+                                        </p>
+                                        {% else %}
+                                        <p style="margin: 0; color: #92400e; font-size: 14px; font-style: italic;">
+                                            ⚠ Guest Checkout (No Account)
+                                        </p>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- Shipping Address -->
+                    <tr>
+                        <td style="padding: 0 30px 30px 30px;">
+                            <h3 style="margin: 0 0 15px 0; color: #292524; font-size: 18px; font-weight: bold;">
+                                Shipping Address
+                            </h3>
+                            <div style="background-color: #fafaf9; padding: 20px; border-radius: 8px; border-left: 4px solid #facc15;">
+                                <p style="margin: 0; color: #292524; line-height: 1.8; font-size: 15px;">
+                                    {{ order.full_name }}<br>
+                                    {{ order.shipping_address }}<br>
+                                    {{ order.shipping_city }}, {{ order.shipping_state }} {{ order.shipping_zip }}<br>
+                                    {{ order.shipping_country }}
+                                </p>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <!-- Order Items -->
+                    <tr>
+                        <td style="padding: 0 30px 30px 30px;">
+                            <h3 style="margin: 0 0 20px 0; color: #292524; font-size: 20px; font-weight: bold;">
+                                Order Items
+                            </h3>
+                            
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #fafaf9; border-radius: 8px; overflow: hidden;">
+                                <tr style="background-color: #292524;">
+                                    <th style="padding: 15px; text-align: left; color: #ffffff; font-size: 14px; text-transform: uppercase;">Item</th>
+                                    <th style="padding: 15px; text-align: center; color: #ffffff; font-size: 14px; text-transform: uppercase;">Qty</th>
+                                    <th style="padding: 15px; text-align: right; color: #ffffff; font-size: 14px; text-transform: uppercase;">Price</th>
+                                    <th style="padding: 15px; text-align: right; color: #ffffff; font-size: 14px; text-transform: uppercase;">Subtotal</th>
+                                </tr>
+                                {% for item in order.items.all %}
+                                <tr style="border-bottom: 1px solid #e7e5e4;">
+                                    <td style="padding: 15px;">
+                                        <strong style="color: #292524; font-size: 15px;">
+                                            {% if item.dog %}
+                                                {{ item.dog.name }}
+                                            {% else %}
+                                                {{ item.accessory.name }}
+                                            {% endif %}
+                                        </strong>
+                                        <br>
+                                        <span style="color: #78716c; font-size: 13px;">
+                                            {% if item.dog %}
+                                                {{ item.dog.breed_category.name }} | {{ item.item_type }}
+                                            {% else %}
+                                                {{ item.accessory.category.name }} | {{ item.item_type }}
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                    <td style="padding: 15px; text-align: center; color: #57534e; font-size: 15px;">
+                                        {{ item.quantity }}
+                                    </td>
+                                    <td style="padding: 15px; text-align: right; color: #57534e; font-size: 15px;">
+                                        ${{ item.price }}
+                                    </td>
+                                    <td style="padding: 15px; text-align: right; color: #15803d; font-weight: bold; font-size: 16px;">
+                                        ${{ item.subtotal }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                <tr>
+                                    <td colspan="3" style="padding: 20px; text-align: right; font-size: 18px; font-weight: bold; color: #292524;">
+                                        TOTAL:
+                                    </td>
+                                    <td style="padding: 20px; text-align: right; font-size: 24px; font-weight: bold; color: #15803d;">
+                                        ${{ order.total_amount }}
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- Adoption Form Alert -->
+                    {% if order.adoption_form %}
+                    <tr>
+                        <td style="padding: 0 30px 30px 30px;">
+                            <div style="background-color: #fef3c7; padding: 20px; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                                <h3 style="margin: 0 0 10px 0; color: #92400e; font-size: 16px; font-weight: bold;">
+                                    ⚠️ Adoption Application Included
+                                </h3>
+                                <p style="margin: 0; color: #78350f; font-size: 14px;">
+                                    This order includes an adoption application. Please review it in the admin panel.
+                                </p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endif %}
+                    
+                    <!-- Customer Notes -->
+                    {% if order.customer_notes %}
+                    <tr>
+                        <td style="padding: 0 30px 30px 30px;">
+                            <h3 style="margin: 0 0 15px 0; color: #292524; font-size: 18px; font-weight: bold;">
+                                Customer Notes
+                            </h3>
+                            <div style="background-color: #fef9c3; padding: 20px; border-radius: 8px; border-left: 4px solid #facc15;">
+                                <p style="margin: 0; color: #292524; font-size: 14px; line-height: 1.6;">
+                                    {{ order.customer_notes }}
+                                </p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endif %}
+                    
+                    <!-- Action Required -->
+                    <tr>
+                        <td style="padding: 0 30px 30px 30px;">
+                            <div style="background-color: #fee2e2; padding: 25px; border-radius: 8px; border-left: 4px solid #dc2626;">
+                                <h3 style="margin: 0 0 15px 0; color: #991b1b; font-size: 18px; font-weight: bold;">
+                                    ⚡ Action Required
+                                </h3>
+                                <ol style="margin: 0; padding-left: 20px; color: #7f1d1d; font-size: 14px; line-height: 1.8;">
+                                    <li>Login to admin panel to view full order details</li>
+                                    <li>Contact customer to arrange payment</li>
+                                    <li>Update order status as it progresses</li>
+                                    {% if order.adoption_form %}
+                                    <li>Review and approve/reject adoption application</li>
+                                    {% endif %}
+                                    <li>Prepare items for shipping or pickup</li>
+                                </ol>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #292524; padding: 30px; text-align: center;">
+                            <p style="margin: 0 0 10px 0; color: #ffffff; font-size: 16px;">
+                                {{ site_settings.site_name }} Admin Notification
+                            </p>
+                            <p style="margin: 0; color: #78716c; font-size: 12px;">
+                                This is an automated notification. Do not reply to this email.
+                            </p>
+                        </td>
+                    </tr>
+                    
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

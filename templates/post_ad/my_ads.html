@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}My Ads - {{ site_settings.site_name }}{% endblock %}
+
+{% block content %}
+
+<section class="py-12 bg-[#f8faf8] min-h-screen">
+    <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="flex items-center justify-between mb-8">
+            <h1 class="text-4xl font-bold text-charcoal-900 font-display">My Ads</h1>
+            <a href="{% url 'post_ad_create' %}" class="bg-forest-600 hover:bg-forest-700 text-white font-bold py-3 px-6 rounded-lg transition">
+                <i class="fas fa-plus mr-2"></i> Post New Ad
+            </a>
+        </div>
+        
+        {% if ads %}
+        <div class="space-y-6">
+            {% for ad in ads %}
+            <div class="bg-white rounded-2xl shadow-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-xl font-bold text-charcoal-900">{{ ad.title }}</h3>
+                        <p class="text-charcoal-600">Posted on {{ ad.created_at|date:"F d, Y" }}</p>
+                    </div>
+                    <span class="px-4 py-2 rounded-lg font-semibold 
+                        {% if ad.status == 'approved' %}bg-green-100 text-green-800
+                        {% elif ad.status == 'rejected' %}bg-red-100 text-red-800
+                        {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                        {{ ad.get_status_display }}
+                    </span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="{% url 'post_ad_detail' ad.pk %}" class="text-forest-600 hover:text-forest-700 font-medium">
+                        View Details
+                    </a>
+                    <span class="text-charcoal-400">|</span>
+                    <span class="text-charcoal-600">Views: {{ ad.views }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="bg-white rounded-2xl shadow-lg p-12 text-center">
+            <i class="fas fa-bullhorn text-6xl text-charcoal-300 mb-6"></i>
+            <h2 class="text-3xl font-bold text-charcoal-900 mb-4">No Ads Yet</h2>
+            <p class="text-charcoal-600 mb-8">Create your first ad!</p>
+            <a href="{% url 'post_ad_create' %}" class="bg-forest-600 hover:bg-forest-700 text-white font-bold py-3 px-8 rounded-lg transition">
+                Post an Ad
+            </a>
+        </div>
+        {% endif %}
+        
+    </div>
+</section>
+
+{% endblock %}

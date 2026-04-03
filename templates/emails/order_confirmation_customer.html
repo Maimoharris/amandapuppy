@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Arial', sans-serif; background-color: #f5f5f4;">
+    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f5f5f4; padding: 40px 20px;">
+        <tr>
+            <td align="center">
+                <table cellpadding="0" cellspacing="0" border="0" width="600" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #cd4735 0%, #e06451 100%); padding: 40px 30px; text-align: center;">
+                            <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: bold;">
+                                🐾 Thank You for Your Order!
+                            </h1>
+                            <p style="margin: 10px 0 0 0; color: #ffffff; font-size: 16px; opacity: 0.9;">
+                                Your order has been received successfully
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Order Number -->
+                    <tr>
+                        <td style="padding: 30px; background-color: #fef9c3; border-bottom: 3px solid #facc15;">
+                            <table width="100%">
+                                <tr>
+                                    <td style="text-align: center;">
+                                        <p style="margin: 0; color: #78716c; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Order Number</p>
+                                        <h2 style="margin: 8px 0 0 0; color: #cd4735; font-size: 28px; font-weight: bold;">
+                                            #{{ order.order_number }}
+                                        </h2>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- Greeting -->
+                    <tr>
+                        <td style="padding: 30px;">
+                            <p style="margin: 0 0 20px 0; color: #292524; font-size: 16px; line-height: 1.6;">
+                                Dear <strong>{{ order.full_name }}</strong>,
+                            </p>
+                            <p style="margin: 0 0 20px 0; color: #57534e; font-size: 15px; line-height: 1.6;">
+                                We're excited to confirm that we've received your order! Our team will review your order and contact you shortly with payment details and next steps.
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Order Items -->
+                    <tr>
+                        <td style="padding: 0 30px 30px 30px;">
+                            <h3 style="margin: 0 0 20px 0; color: #292524; font-size: 20px; font-weight: bold;">
+                                Order Details
+                            </h3>
+                            
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #fafaf9; border-radius: 8px; overflow: hidden;">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        {% for item in order.items.all %}
+                                        <table width="100%" style="margin-bottom: {% if not forloop.last %}20px{% else %}0{% endif %}; padding-bottom: {% if not forloop.last %}20px{% else %}0{% endif %}; border-bottom: {% if not forloop.last %}1px solid #e7e5e4{% else %}none{% endif %};">
+                                            <tr>
+                                                <td style="vertical-align: top; width: 70%;">
+                                                    <p style="margin: 0; color: #292524; font-size: 16px; font-weight: bold;">
+                                                        {% if item.dog %}
+                                                            {{ item.dog.name }}
+                                                        {% else %}
+                                                            {{ item.accessory.name }}
+                                                        {% endif %}
+                                                    </p>
+                                                    <p style="margin: 5px 0 0 0; color: #78716c; font-size: 14px;">
+                                                        {% if item.dog %}
+                                                            {{ item.dog.breed_category.name }}
+                                                        {% else %}
+                                                            {{ item.accessory.category.name }}
+                                                            {% if item.quantity > 1 %}× {{ item.quantity }}{% endif %}
+                                                        {% endif %}
+                                                    </p>
+                                                </td>
+                                                <td style="vertical-align: top; width: 30%; text-align: right;">
+                                                    <p style="margin: 0; color: #cd4735; font-size: 18px; font-weight: bold;">
+                                                        ${{ item.subtotal }}
+                                                    </p>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        {% endfor %}
+                                        
+                                        <!-- Total -->
+                                        <table width="100%" style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #d6d3d1;">
+                                            <tr>
+                                                <td style="text-align: right; padding-right: 20px;">
+                                                    <p style="margin: 0; color: #57534e; font-size: 16px; font-weight: bold;">
+                                                        Total Amount:
+                                                    </p>
+                                                </td>
+                                                <td style="width: 120px; text-align: right;">
+                                                    <p style="margin: 0; color: #cd4735; font-size: 24px; font-weight: bold;">
+                                                        ${{ order.total_amount }}
+                                                    </p>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- Shipping Address -->
+                    <tr>
+                        <td style="padding: 0 30px 30px 30px;">
+                            <h3 style="margin: 0 0 15px 0; color: #292524; font-size: 18px; font-weight: bold;">
+                                Shipping Address
+                            </h3>
+                            <div style="background-color: #fafaf9; padding: 20px; border-radius: 8px; border-left: 4px solid #0ba5e9;">
+                                <p style="margin: 0; color: #292524; line-height: 1.8; font-size: 15px;">
+                                    {{ order.full_name }}<br>
+                                    {{ order.shipping_address }}<br>
+                                    {{ order.shipping_city }}, {{ order.shipping_state }} {{ order.shipping_zip }}<br>
+                                    {{ order.shipping_country }}
+                                </p>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <!-- Next Steps -->
+                    <tr>
+                        <td style="padding: 0 30px 30px 30px;">
+                            <div style="background-color: #e0f2fe; padding: 25px; border-radius: 8px; border-left: 4px solid #0ba5e9;">
+                                <h3 style="margin: 0 0 15px 0; color: #0c4a6e; font-size: 18px; font-weight: bold;">
+                                    📋 What Happens Next?
+                                </h3>
+                                <ol style="margin: 0; padding-left: 20px; color: #075985; font-size: 14px; line-height: 1.8;">
+                                    <li>Our team will review your order</li>
+                                    <li>We'll contact you via email or phone with payment instructions</li>
+                                    <li>Once payment is confirmed, we'll process your order</li>
+                                    <li>You'll receive shipping/pickup information</li>
+                                    {% if order.adoption_form %}
+                                    <li>We'll review your adoption application</li>
+                                    {% endif %}
+                                </ol>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <!-- Contact Info -->
+                    <tr>
+                        <td style="padding: 0 30px 30px 30px;">
+                            <h3 style="margin: 0 0 15px 0; color: #292524; font-size: 18px; font-weight: bold;">
+                                Need Help?
+                            </h3>
+                            <p style="margin: 0 0 15px 0; color: #57534e; font-size: 15px; line-height: 1.6;">
+                                If you have any questions about your order, please don't hesitate to contact us:
+                            </p>
+                            <table width="100%">
+                                <tr>
+                                    <td style="padding: 10px 0;">
+                                        <p style="margin: 0; color: #57534e; font-size: 14px;">
+                                            📧 Email: <a href="mailto:{{ site_settings.email }}" style="color: #cd4735; text-decoration: none; font-weight: bold;">{{ site_settings.email }}</a>
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px 0;">
+                                        <p style="margin: 0; color: #57534e; font-size: 14px;">
+                                            📞 Phone: <a href="tel:{{ site_settings.phone }}" style="color: #cd4735; text-decoration: none; font-weight: bold;">{{ site_settings.phone }}</a>
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #292524; padding: 30px; text-align: center;">
+                            <p style="margin: 0 0 15px 0; color: #ffffff; font-size: 18px; font-weight: bold;">
+                                Thank you for choosing {{ site_settings.site_name }}!
+                            </p>
+                            <p style="margin: 0; color: #a8a29e; font-size: 14px;">
+                                {{ site_settings.site_tagline }}
+                            </p>
+                            <div style="margin-top: 20px;">
+                                {% if site_settings.facebook_url %}
+                                <a href="{{ site_settings.facebook_url }}" style="display: inline-block; margin: 0 5px; color: #ffffff; text-decoration: none; font-size: 20px;">📘</a>
+                                {% endif %}
+                                {% if site_settings.instagram_url %}
+                                <a href="{{ site_settings.instagram_url }}" style="display: inline-block; margin: 0 5px; color: #ffffff; text-decoration: none; font-size: 20px;">📷</a>
+                                {% endif %}
+                                {% if site_settings.twitter_url %}
+                                <a href="{{ site_settings.twitter_url }}" style="display: inline-block; margin: 0 5px; color: #ffffff; text-decoration: none; font-size: 20px;">🐦</a>
+                                {% endif %}
+                            </div>
+                            <p style="margin: 20px 0 0 0; color: #78716c; font-size: 12px;">
+                                © 2024 {{ site_settings.site_name }}. All rights reserved.
+                            </p>
+                        </td>
+                    </tr>
+                    
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

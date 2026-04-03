@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Order #{{ order.order_number }} - {{ site_settings.site_name }}{% endblock %}
+
+{% block content %}
+
+<section class="py-12 bg-[#f8faf8] min-h-screen">
+    <div class="max-w-4xl mx-auto px-4">
+        
+        <a href="{% url 'order_history' %}" class="inline-flex items-center text-forest-600 hover:text-forest-700 font-medium mb-6">
+            <i class="fas fa-arrow-left mr-2"></i> Back to My Orders
+        </a>
+        
+        <div class="bg-white rounded-2xl shadow-lg p-8">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h1 class="text-3xl font-bold text-charcoal-900 font-display">Order #{{ order.order_number }}</h1>
+                    <p class="text-charcoal-600">Placed on {{ order.created_at|date:"F d, Y" }}</p>
+                </div>
+                <span class="px-4 py-2 rounded-lg font-semibold 
+                    {% if order.status == 'delivered' %}bg-green-100 text-green-800
+                    {% elif order.status == 'shipped' %}bg-blue-100 text-blue-800
+                    {% elif order.status == 'cancelled' %}bg-red-100 text-red-800
+                    {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                    {{ order.get_status_display }}
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 border-t border-charcoal-200 pt-6">
+                <div>
+                    <h3 class="font-bold text-charcoal-900 mb-2">Shipping Address</h3>
+                    <p class="text-charcoal-700">{{ order.full_name }}</p>
+                    <p class="text-charcoal-700">{{ order.shipping_address }}</p>
+                    <p class="text-charcoal-700">{{ order.shipping_city }}, {{ order.shipping_state }} {{ order.shipping_zip }}</p>
+                </div>
+                <div>
+                    <h3 class="font-bold text-charcoal-900 mb-2">Contact</h3>
+                    <p class="text-charcoal-700">{{ order.email }}</p>
+                    <p class="text-charcoal-700">{{ order.phone }}</p>
+                </div>
+            </div>
+            
+            <div class="border-t border-charcoal-200 pt-6">
+                <h3 class="font-bold text-charcoal-900 mb-4">Order Items</h3>
+                <div class="space-y-4">
+                    {% for item in order.items.all %}
+                    <div class="flex justify-between py-3 border-b border-neutral-100">
+                        <div>
+                            {% if item.dog %}
+                            <span class="font-semibold">{{ item.dog.name }}</span> - {{ item.dog.breed_category.name }}
+                            {% else %}
+                            <span class="font-semibold">{{ item.accessory.name }}</span>
+                            {% if item.quantity > 1 %} x{{ item.quantity }}{% endif %}
+                            {% endif %}
+                        </div>
+                        <div class="font-semibold">${{ item.subtotal|floatformat:2 }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="mt-6 pt-6 border-t-2 border-charcoal-200">
+                    <div class="flex justify-between text-2xl font-bold">
+                        <span>Total</span>
+                        <span class="text-forest-600">${{ order.total_amount|floatformat:2 }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</section>
+
+{% endblock %}

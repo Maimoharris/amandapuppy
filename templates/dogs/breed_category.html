@@ -1,0 +1,713 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}{{ category.name }} Puppies — {{ site_settings.site_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ─── Page Shell ──────────────────────────────────────────── */
+    .category-page { background: #f8faf8; min-height: 100vh; }
+
+    /* ─── Hero Banner ─────────────────────────────────────────── */
+    .category-hero {
+        position: relative;
+        min-height: 340px;
+        display: flex;
+        align-items: flex-end;
+        overflow: hidden;
+    }
+    .category-hero-img {
+        position: absolute; inset: 0;
+        width: 100%; height: 100%;
+        object-fit: cover;
+        transition: transform 8s ease;
+    }
+    .category-hero:hover .category-hero-img { transform: scale(1.04); }
+
+    /* Gradient overlay — always present */
+    .category-hero-overlay {
+        position: absolute; inset: 0;
+        background: linear-gradient(
+            180deg,
+            rgba(8,43,26,.35) 0%,
+            rgba(14,67,41,.55) 40%,
+            rgba(19,102,65,.85) 80%,
+            rgba(14,67,41,.96) 100%
+        );
+        z-index: 1;
+    }
+    /* Fallback gradient when no image */
+    .category-hero-fallback {
+        position: absolute; inset: 0;
+        background:
+            radial-gradient(ellipse at 0% 100%, rgba(69,187,130,.25) 0%, transparent 55%),
+            radial-gradient(ellipse at 100% 0%, rgba(212,160,23,.12) 0%, transparent 55%),
+            linear-gradient(135deg, #0e4329 0%, #136641 55%, #22a066 100%);
+    }
+    .category-hero-fallback::after {
+        content: '';
+        position: absolute; inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23ffffff' fill-opacity='0.025'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    .category-hero-content {
+        position: relative; z-index: 2;
+        width: 100%;
+        padding: 2.5rem 0 2.75rem;
+    }
+
+    /* Breadcrumb */
+    .breadcrumb { display: flex; align-items: center; gap: 7px; font-size: 0.78rem; color: rgba(255,255,255,.55); flex-wrap: wrap; margin-bottom: 14px; }
+    .breadcrumb a { color: rgba(255,255,255,.65); text-decoration: none; transition: color .2s; }
+    .breadcrumb a:hover { color: white; }
+    .breadcrumb-sep { font-size: 0.55rem; color: rgba(255,255,255,.3); }
+
+    /* Category badge */
+    .cat-badge {
+        display: inline-flex; align-items: center; gap: 7px;
+        background: rgba(255,255,255,.12);
+        border: 1px solid rgba(255,255,255,.22);
+        color: rgba(255,255,255,.9);
+        font-size: 0.775rem; font-weight: 700;
+        padding: 5px 14px; border-radius: 50px;
+        backdrop-filter: blur(8px);
+        margin-bottom: 12px;
+        letter-spacing: .02em;
+    }
+    .cat-badge-dot { width: 7px; height: 7px; border-radius: 50%; background: #45bb82; }
+
+    .cat-hero-title {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 800;
+        font-size: clamp(2rem, 5vw, 3rem);
+        color: white;
+        letter-spacing: -0.02em;
+        line-height: 1.1;
+        margin-bottom: 10px;
+    }
+    .cat-hero-desc {
+        color: rgba(255,255,255,.72);
+        font-size: 1rem;
+        max-width: 560px;
+        line-height: 1.6;
+        margin-bottom: 20px;
+    }
+
+    /* Stats row in hero */
+    .cat-hero-stats { display: flex; align-items: center; gap: 0; flex-wrap: wrap; }
+    .cat-hero-stat {
+        padding: 0 18px;
+        border-right: 1px solid rgba(255,255,255,.18);
+        text-align: center;
+    }
+    .cat-hero-stat:first-child { padding-left: 0; }
+    .cat-hero-stat:last-child  { border-right: none; }
+    .cat-hero-stat-num { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 1.4rem; color: white; line-height: 1; }
+    .cat-hero-stat-lbl { font-size: 0.72rem; color: rgba(255,255,255,.55); margin-top: 3px; }
+
+    /* Back button */
+    .back-btn {
+        display: inline-flex; align-items: center; gap: 7px;
+        color: rgba(255,255,255,.8);
+        font-size: 0.8125rem; font-weight: 600;
+        text-decoration: none;
+        background: rgba(255,255,255,.1);
+        border: 1px solid rgba(255,255,255,.2);
+        padding: 6px 14px; border-radius: 9px;
+        backdrop-filter: blur(6px);
+        transition: all .2s;
+        margin-bottom: 18px;
+        width: fit-content;
+    }
+    .back-btn:hover { background: rgba(255,255,255,.18); color: white; }
+
+    /* ─── Toolbar ─────────────────────────────────────────────── */
+    .toolbar {
+        background: white;
+        border-radius: 16px;
+        border: 1.5px solid rgba(34,160,102,.08);
+        box-shadow: 0 1px 4px rgba(0,0,0,.04);
+        padding: 12px 18px;
+        display: flex; align-items: center; justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 24px;
+    }
+    .results-count { font-size: 0.875rem; color: #5f6e7c; font-weight: 500; }
+    .results-count strong { color: #1e2730; font-weight: 700; }
+
+    .sort-select {
+        padding: 8px 30px 8px 12px;
+        border: 1.5px solid #e7e5e4;
+        border-radius: 10px;
+        font-size: 0.8125rem;
+        color: #2d3843;
+        background: #fafaf9;
+        appearance: none; -webkit-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23808d9a' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        cursor: pointer;
+        outline: none;
+        transition: border-color .2s, box-shadow .2s;
+    }
+    .sort-select:focus { border-color: #22a066; box-shadow: 0 0 0 3px rgba(34,160,102,.12); }
+
+    .view-toggle { display: flex; gap: 4px; }
+    .view-btn {
+        width: 34px; height: 34px; border-radius: 9px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.8rem; color: #808d9a;
+        background: transparent;
+        border: 1.5px solid #e7e5e4;
+        cursor: pointer; transition: all .2s;
+    }
+    .view-btn.active, .view-btn:hover { background: #f0faf4; border-color: #b3e7c9; color: #136641; }
+
+    /* ─── Dog Cards ───────────────────────────────────────────── */
+    .dog-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        border: 1.5px solid rgba(34,160,102,.07);
+        box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 4px 12px rgba(0,0,0,.05);
+        transition: all .3s ease;
+        position: relative;
+    }
+    .dog-card:hover {
+        box-shadow: 0 8px 32px rgba(0,0,0,.1), 0 2px 10px rgba(34,160,102,.1);
+        transform: translateY(-5px);
+        border-color: rgba(34,160,102,.2);
+    }
+    .dog-card-img {
+        overflow: hidden; position: relative; background: #f0faf4;
+    }
+    .dog-card-img img {
+        width: 100%; height: 220px; object-fit: cover;
+        display: block; transition: transform .5s ease;
+    }
+    .dog-card:hover .dog-card-img img { transform: scale(1.06); }
+
+    /* Quick action overlay */
+    .card-overlay-actions {
+        position: absolute; top: 10px; right: 10px;
+        display: flex; flex-direction: column; gap: 6px;
+        opacity: 0; transform: translateX(8px);
+        transition: all .25s ease; z-index: 5;
+    }
+    .dog-card:hover .card-overlay-actions { opacity: 1; transform: translateX(0); }
+    .overlay-btn {
+        width: 34px; height: 34px; background: white;
+        border-radius: 9px;
+        display: flex; align-items: center; justify-content: center;
+        color: #3c4a57; font-size: 0.78rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,.14);
+        transition: background .15s, color .15s;
+        text-decoration: none; border: none; cursor: pointer;
+    }
+    .overlay-btn:hover { background: #22a066; color: white; }
+    .overlay-btn.heart:hover { background: #ef4444; color: white; }
+
+    .dog-card-body { padding: 16px 18px 18px; }
+
+    .breed-pill {
+        display: inline-flex; align-items: center; gap: 5px;
+        background: #f0faf4; color: #136641;
+        font-size: 0.7rem; font-weight: 700;
+        padding: 3px 9px; border-radius: 50px;
+        border: 1px solid #b3e7c9; margin-bottom: 9px;
+    }
+    .dog-name {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 700; font-size: 1rem; color: #1e2730;
+        margin-bottom: 8px; line-height: 1.3;
+    }
+    .dog-name a { text-decoration: none; transition: color .2s; }
+    .dog-name a:hover { color: #136641; }
+
+    .dog-meta { display: flex; flex-wrap: wrap; gap: 10px; font-size: 0.775rem; color: #5f6e7c; margin-bottom: 10px; }
+    .dog-meta span { display: flex; align-items: center; gap: 5px; }
+    .dog-meta i { color: #22a066; font-size: .72rem; }
+
+    .stars { display: flex; align-items: center; gap: 2px; margin-bottom: 12px; }
+    .stars .on  { color: #d4a017; font-size: .78rem; }
+    .stars .off { color: #e7e5e4; font-size: .78rem; }
+    .stars .count { font-size: .75rem; color: #808d9a; margin-left: 5px; }
+
+    .card-footer {
+        display: flex; align-items: center; justify-content: space-between;
+        padding-top: 12px; border-top: 1px solid #f5f5f4;
+    }
+    .dog-price {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 800; font-size: 1.3rem; color: #136641;
+        letter-spacing: -0.01em;
+    }
+    .btn-adopt {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: linear-gradient(135deg, #22a066, #136641);
+        color: white; font-weight: 700; font-size: 0.8rem;
+        padding: 8px 16px; border-radius: 10px; text-decoration: none;
+        box-shadow: 0 2px 8px rgba(34,160,102,.3);
+        transition: all .2s ease;
+    }
+    .btn-adopt:hover { box-shadow: 0 4px 16px rgba(34,160,102,.5); transform: translateY(-1px); }
+    .sold-label {
+        font-size: .775rem; font-weight: 700; color: #ef4444;
+        background: #fff5f5; padding: 6px 12px;
+        border-radius: 9px; border: 1px solid #fecaca;
+    }
+
+    /* ─── List view ───────────────────────────────────────────── */
+    .dogs-grid.list-view { grid-template-columns: 1fr !important; }
+    .dogs-grid.list-view .dog-card { display: flex; flex-direction: row; }
+    .dogs-grid.list-view .dog-card-img { width: 210px; flex-shrink: 0; }
+    .dogs-grid.list-view .dog-card-img img { height: 100%; }
+    .dogs-grid.list-view .dog-card-body { flex: 1; }
+    @media (max-width: 600px) {
+        .dogs-grid.list-view .dog-card { flex-direction: column; }
+        .dogs-grid.list-view .dog-card-img { width: 100%; }
+        .dogs-grid.list-view .dog-card-img img { height: 200px; }
+    }
+
+    /* ─── Breed Info Card ─────────────────────────────────────── */
+    .breed-info-card {
+        background: white;
+        border-radius: 20px;
+        border: 1.5px solid rgba(34,160,102,.08);
+        box-shadow: 0 1px 4px rgba(0,0,0,.04), 0 6px 20px rgba(0,0,0,.05);
+        padding: 28px;
+        margin-bottom: 24px;
+    }
+    .breed-info-title {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 800; font-size: 1.05rem; color: #1e2730;
+        display: flex; align-items: center; gap: 9px;
+        margin-bottom: 16px;
+    }
+    .breed-info-title i { color: #22a066; font-size: .9rem; }
+    .breed-trait-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; }
+    .breed-trait-icon {
+        width: 32px; height: 32px; border-radius: 9px;
+        background: #f0faf4; display: flex; align-items: center; justify-content: center;
+        color: #22a066; font-size: 0.78rem; flex-shrink: 0; margin-top: 1px;
+    }
+    .breed-trait-label { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #adb5be; }
+    .breed-trait-value { font-size: .875rem; font-weight: 600; color: #2d3843; margin-top: 1px; }
+
+    /* CTA card */
+    .cta-card {
+        background: linear-gradient(135deg, #0e4329 0%, #136641 60%, #22a066 100%);
+        border-radius: 20px;
+        padding: 28px;
+        text-align: center;
+        position: relative; overflow: hidden;
+    }
+    .cta-card::before {
+        content: '';
+        position: absolute; inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .cta-card-inner { position: relative; z-index: 1; }
+
+    /* ─── Pagination ──────────────────────────────────────────── */
+    .pagination { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; justify-content: center; }
+    .page-btn {
+        min-width: 38px; height: 38px;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 10px; font-size: .875rem; font-weight: 600;
+        text-decoration: none; transition: all .2s; padding: 0 12px;
+    }
+    .page-btn-default {
+        background: white; color: #4a5968;
+        border: 1.5px solid #e7e5e4;
+        box-shadow: 0 1px 3px rgba(0,0,0,.04);
+    }
+    .page-btn-default:hover { background: #f0faf4; border-color: #b3e7c9; color: #136641; }
+    .page-btn-active {
+        background: linear-gradient(135deg, #22a066, #136641);
+        color: white; border: none;
+        box-shadow: 0 2px 10px rgba(34,160,102,.35);
+    }
+    .page-btn-nav {
+        background: white; color: #136641;
+        border: 1.5px solid rgba(34,160,102,.25);
+    }
+    .page-btn-nav:hover { background: #f0faf4; border-color: #22a066; }
+    .page-ellipsis { color: #adb5be; font-size: .875rem; padding: 0 4px; }
+
+    /* ─── Empty State ─────────────────────────────────────────── */
+    .empty-state {
+        background: white; border-radius: 20px;
+        border: 1.5px dashed rgba(34,160,102,.2);
+        padding: 60px 24px; text-align: center;
+    }
+    .empty-icon-wrap {
+        width: 80px; height: 80px; background: #f0faf4;
+        border-radius: 20px; display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 20px; font-size: 2rem; color: #7dd4a8;
+    }
+
+    /* ─── Other Breeds Strip ──────────────────────────────────── */
+    .breed-chip {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: white; color: #3c4a57;
+        font-size: 0.8125rem; font-weight: 600;
+        padding: 8px 16px; border-radius: 50px;
+        border: 1.5px solid rgba(34,160,102,.1);
+        box-shadow: 0 1px 4px rgba(0,0,0,.04);
+        text-decoration: none; transition: all .2s;
+    }
+    .breed-chip:hover {
+        background: #f0faf4; border-color: rgba(34,160,102,.3);
+        color: #136641; transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(34,160,102,.12);
+    }
+    .breed-chip i { color: #22a066; font-size: .78rem; }
+</style>
+{% endblock %}
+
+
+{% block content %}
+<div class="category-page">
+
+    <!-- ═══ Category Hero ════════════════════════════════════════ -->
+    <div class="category-hero">
+        {% if category.image %}
+        <img src="{{ category.image.url }}" alt="{{ category.name }}" class="category-hero-img">
+        <div class="category-hero-overlay"></div>
+        {% else %}
+        <div class="category-hero-fallback"></div>
+        {% endif %}
+
+        <div class="category-hero-content">
+            <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+
+                <!-- Breadcrumb -->
+                <div class="breadcrumb">
+                    <a href="{% url 'home' %}">Home</a>
+                    <i class="fas fa-chevron-right breadcrumb-sep"></i>
+                    <a href="{% url 'dog_list' %}">Puppies</a>
+                    <i class="fas fa-chevron-right breadcrumb-sep"></i>
+                    <span style="color:rgba(255,255,255,.9);">{{ category.name }}</span>
+                </div>
+
+                <a href="{% url 'dog_list' %}" class="back-btn">
+                    <i class="fas fa-arrow-left" style="font-size:.72rem;"></i> All Breeds
+                </a>
+
+                <div class="cat-badge">
+                    <span class="cat-badge-dot"></span>
+                    {{ dogs.paginator.count }} pup{{ dogs.paginator.count|pluralize }} available
+                </div>
+
+                <h1 class="cat-hero-title">{{ category.name }}</h1>
+
+                {% if category.description %}
+                <p class="cat-hero-desc">{{ category.description }}</p>
+                {% endif %}
+
+                <!-- Mini stats -->
+                <div class="cat-hero-stats">
+                    <div class="cat-hero-stat">
+                        <div class="cat-hero-stat-num">{{ dogs.paginator.count }}</div>
+                        <div class="cat-hero-stat-lbl">Available</div>
+                    </div>
+                    <div class="cat-hero-stat">
+                        <div class="cat-hero-stat-num">4.9★</div>
+                        <div class="cat-hero-stat-lbl">Avg Rating</div>
+                    </div>
+                    <div class="cat-hero-stat">
+                        <div class="cat-hero-stat-num">100%</div>
+                        <div class="cat-hero-stat-lbl">Health Checked</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ═══ Main Content ══════════════════════════════════════════ -->
+    <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div class="flex flex-col lg:flex-row gap-8">
+
+            <!-- ─── Sidebar ──────────────────────────────────────── -->
+            <aside class="lg:w-[270px] shrink-0 order-2 lg:order-1">
+
+                <!-- Breed info card -->
+                <div class="breed-info-card">
+                    <div class="breed-info-title">
+                        <i class="fas fa-info-circle"></i> About {{ category.name }}
+                    </div>
+
+                    {% if category.description %}
+                    <p style="font-size:.875rem;color:#5f6e7c;line-height:1.65;margin-bottom:18px;">{{ category.description }}</p>
+                    {% endif %}
+
+                    <!-- Trait rows - static info tiles -->
+                    <div class="breed-trait-row">
+                        <div class="breed-trait-icon"><i class="fas fa-shield-alt"></i></div>
+                        <div>
+                            <div class="breed-trait-label">Health</div>
+                            <div class="breed-trait-value">Vet-certified & guaranteed</div>
+                        </div>
+                    </div>
+                    <div class="breed-trait-row">
+                        <div class="breed-trait-icon"><i class="fas fa-syringe"></i></div>
+                        <div>
+                            <div class="breed-trait-label">Vaccinations</div>
+                            <div class="breed-trait-value">Up to date on all shots</div>
+                        </div>
+                    </div>
+                    <div class="breed-trait-row">
+                        <div class="breed-trait-icon"><i class="fas fa-file-alt"></i></div>
+                        <div>
+                            <div class="breed-trait-label">Papers</div>
+                            <div class="breed-trait-value">Registration documents included</div>
+                        </div>
+                    </div>
+                    <div class="breed-trait-row" style="margin-bottom:0;">
+                        <div class="breed-trait-icon"><i class="fas fa-truck"></i></div>
+                        <div>
+                            <div class="breed-trait-label">Delivery</div>
+                            <div class="breed-trait-value">Safe door-to-door available</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Other breeds -->
+                {% if breed_categories %}
+                <div class="breed-info-card">
+                    <div class="breed-info-title">
+                        <i class="fas fa-paw"></i> Other Breeds
+                    </div>
+                    <div style="display:flex;flex-wrap:wrap;gap:7px;">
+                        {% for cat in breed_categories %}
+                        {% if cat.slug != category.slug %}
+                        <a href="{% url 'breed_category_detail' cat.slug %}" class="breed-chip">
+                            <i class="fas fa-paw"></i> {{ cat.name }}
+                        </a>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- CTA card -->
+                <div class="cta-card">
+                    <div class="cta-card-inner">
+                        <div style="width:48px;height:48px;background:rgba(255,255,255,.15);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:1.2rem;color:white;">
+                            <i class="fas fa-headset"></i>
+                        </div>
+                        <h4 style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1rem;color:white;margin-bottom:7px;">Need help choosing?</h4>
+                        <p style="color:rgba(255,255,255,.7);font-size:.8125rem;margin-bottom:16px;line-height:1.55;">Our team can help you find the perfect {{ category.name }} for your home.</p>
+                        <a href="{% url 'contact_us' %}" style="display:inline-flex;align-items:center;gap:7px;background:white;color:#136641;font-weight:700;font-size:.8125rem;padding:9px 20px;border-radius:11px;text-decoration:none;box-shadow:0 2px 10px rgba(0,0,0,.15);transition:all .2s;">
+                            <i class="fas fa-envelope" style="font-size:.75rem;"></i> Contact Us
+                        </a>
+                    </div>
+                </div>
+
+            </aside>
+
+
+            <!-- ─── Main Results ──────────────────────────────────── -->
+            <div class="flex-1 min-w-0 order-1 lg:order-2">
+
+                {% if dogs %}
+                <!-- Toolbar -->
+                <div class="toolbar">
+                    <p class="results-count">
+                        <strong>{{ dogs.paginator.count }}</strong> {{ category.name }} pup{{ dogs.paginator.count|pluralize }} — showing
+                        <strong>{{ dogs.start_index }}–{{ dogs.end_index }}</strong>
+                    </p>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <select class="sort-select" id="sort-sel" aria-label="Sort puppies">
+                            <option value="-created_at" {% if not request.GET.sort or request.GET.sort == '-created_at' %}selected{% endif %}>Newest First</option>
+                            <option value="price_low"   {% if request.GET.sort == 'price_low'  %}selected{% endif %}>Price: Low → High</option>
+                            <option value="price_high"  {% if request.GET.sort == 'price_high' %}selected{% endif %}>Price: High → Low</option>
+                            <option value="name"        {% if request.GET.sort == 'name'       %}selected{% endif %}>Name A–Z</option>
+                        </select>
+                        <div class="view-toggle">
+                            <button class="view-btn active" id="grid-btn" title="Grid view"><i class="fas fa-th"></i></button>
+                            <button class="view-btn" id="list-btn" title="List view"><i class="fas fa-list"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cards grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 dogs-grid" id="dogs-grid">
+                    {% for dog in dogs %}
+                    <div class="dog-card">
+                        {% if dog.is_sold %}
+                        <div class="sold-badge">SOLD</div>
+                        {% endif %}
+
+                        <div class="dog-card-img">
+                            <a href="{% url 'dog_detail' dog.slug %}">
+                                {% if dog.images.all %}
+                                <img src="{{ dog.images.first.image.url }}" alt="{{ dog.name }}">
+                                {% else %}
+                                <div style="height:220px;display:flex;align-items:center;justify-content:center;background:#f0faf4;">
+                                    <i class="fas fa-dog" style="font-size:3.5rem;color:#b3e7c9;"></i>
+                                </div>
+                                {% endif %}
+                            </a>
+                            <!-- Quick actions -->
+                            <div class="card-overlay-actions">
+                                {% if user.is_authenticated %}
+                                <a href="{% url 'add_to_wishlist' 'dog' dog.id %}" class="overlay-btn heart" title="Save to Wishlist">
+                                    <i class="far fa-heart"></i>
+                                </a>
+                                {% endif %}
+                                <a href="{% url 'dog_detail' dog.slug %}" class="overlay-btn" title="View Details">
+                                    <i class="far fa-eye"></i>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="dog-card-body">
+                            <div class="breed-pill">
+                                <i class="fas fa-paw" style="font-size:.58rem;"></i>
+                                {{ category.name }}
+                            </div>
+
+                            <h3 class="dog-name">
+                                <a href="{% url 'dog_detail' dog.slug %}">{{ dog.name }}</a>
+                            </h3>
+
+                            <div class="dog-meta">
+                                <span><i class="fas fa-calendar-alt"></i> {{ dog.age_months }}mo</span>
+                                <span><i class="fas fa-venus-mars"></i> {{ dog.get_gender_display }}</span>
+                            </div>
+
+                            <div class="stars">
+                                {% with avg=dog.average_rating %}
+                                {% for i in "12345" %}
+                                <i class="fas fa-star {% if forloop.counter <= avg %}on{% else %}off{% endif %}"></i>
+                                {% endfor %}
+                                {% endwith %}
+                                <span class="count">({{ dog.rating_count }})</span>
+                            </div>
+
+                            <div class="card-footer">
+                                <div class="dog-price">${{ dog.price|floatformat:0|intcomma }}</div>
+                                {% if not dog.is_sold %}
+                                <a href="{% url 'add_to_cart' 'dog' dog.id %}" class="btn-adopt">
+                                    <i class="fas fa-heart" style="font-size:.72rem;"></i> Adopt
+                                </a>
+                                {% else %}
+                                <span class="sold-label">Sold</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+
+                <!-- Pagination -->
+                {% if dogs.has_other_pages %}
+                <div class="mt-12 flex justify-center">
+                    <nav class="pagination" aria-label="Pagination">
+                        {% if dogs.has_previous %}
+                        <a href="?page={{ dogs.previous_page_number }}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" class="page-btn page-btn-nav">
+                            <i class="fas fa-chevron-left" style="font-size:.7rem;"></i>
+                        </a>
+                        {% endif %}
+
+                        {% for num in dogs.paginator.page_range %}
+                            {% if dogs.number == num %}
+                            <span class="page-btn page-btn-active">{{ num }}</span>
+                            {% elif num > dogs.number|add:'-3' and num < dogs.number|add:'3' %}
+                            <a href="?page={{ num }}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" class="page-btn page-btn-default">{{ num }}</a>
+                            {% elif num == 1 or num == dogs.paginator.num_pages %}
+                            <a href="?page={{ num }}" class="page-btn page-btn-default">{{ num }}</a>
+                            {% elif num == dogs.number|add:'-3' or num == dogs.number|add:'3' %}
+                            <span class="page-ellipsis">…</span>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if dogs.has_next %}
+                        <a href="?page={{ dogs.next_page_number }}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" class="page-btn page-btn-nav">
+                            <i class="fas fa-chevron-right" style="font-size:.7rem;"></i>
+                        </a>
+                        {% endif %}
+                    </nav>
+                </div>
+                {% endif %}
+
+
+                {% else %}
+                <!-- Empty state -->
+                <div class="empty-state">
+                    <div class="empty-icon-wrap"><i class="fas fa-dog"></i></div>
+                    <h3 style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1.35rem;color:#1e2730;margin-bottom:8px;">
+                        No {{ category.name }} Available Yet
+                    </h3>
+                    <p style="color:#5f6e7c;font-size:.9375rem;max-width:380px;margin:0 auto 24px;line-height:1.6;">
+                        We don't have any {{ category.name }} puppies right now — check back soon or browse all our available breeds.
+                    </p>
+                    <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;">
+                        <a href="{% url 'dog_list' %}" class="btn-adopt" style="font-size:.875rem;padding:10px 22px;">
+                            <i class="fas fa-th" style="font-size:.78rem;"></i> All Puppies
+                        </a>
+                        <a href="{% url 'contact_us' %}" style="display:inline-flex;align-items:center;gap:7px;background:white;border:1.5px solid rgba(34,160,102,.25);color:#136641;font-weight:700;font-size:.875rem;padding:10px 22px;border-radius:11px;text-decoration:none;transition:all .2s;">
+                            <i class="fas fa-bell" style="font-size:.78rem;"></i> Notify Me
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+
+            </div><!-- /results -->
+        </div><!-- /flex -->
+    </div><!-- /container -->
+
+</div><!-- /category-page -->
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+(function() {
+    'use strict';
+
+    // ── Sort select ───────────────────────────────────────────
+    const sortSel = document.getElementById('sort-sel');
+    if (sortSel) {
+        sortSel.addEventListener('change', function() {
+            const url = new URL(window.location.href);
+            url.searchParams.set('sort', this.value);
+            url.searchParams.delete('page');
+            window.location.href = url.toString();
+        });
+    }
+
+    // ── Grid / List toggle ────────────────────────────────────
+    const gridBtn  = document.getElementById('grid-btn');
+    const listBtn  = document.getElementById('list-btn');
+    const dogsGrid = document.getElementById('dogs-grid');
+
+    const savedView = localStorage.getItem('catListView') || 'grid';
+    if (savedView === 'list' && dogsGrid) applyList();
+
+    function applyGrid() {
+        if (!dogsGrid) return;
+        dogsGrid.classList.remove('list-view');
+        gridBtn?.classList.add('active');
+        listBtn?.classList.remove('active');
+        localStorage.setItem('catListView', 'grid');
+    }
+    function applyList() {
+        if (!dogsGrid) return;
+        dogsGrid.classList.add('list-view');
+        listBtn?.classList.add('active');
+        gridBtn?.classList.remove('active');
+        localStorage.setItem('catListView', 'list');
+    }
+
+    gridBtn?.addEventListener('click', applyGrid);
+    listBtn?.addEventListener('click', applyList);
+
+})();
+</script>
+{% endblock %}

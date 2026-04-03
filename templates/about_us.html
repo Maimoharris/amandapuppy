@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block title %}About Us - {{ site_settings.site_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-banner-about {
+        background:
+            radial-gradient(ellipse at 0% 100%, rgba(69,187,130,.2) 0%, transparent 55%),
+            radial-gradient(ellipse at 100% 0%, rgba(212,160,23,.12) 0%, transparent 55%),
+            linear-gradient(135deg, #0e4329 0%, #136641 55%, #22a066 100%);
+        padding: 2.75rem 0 2.25rem;
+        position: relative;
+        overflow: hidden;
+    }
+    .page-banner-about::after {
+        content: '';
+        position: absolute; inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Page Banner -->
+<div class="page-banner-about">
+    <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-1">
+        <h1 class="text-4xl font-bold text-white mb-2 font-display text-center">About Us</h1>
+        <p class="text-lg text-center text-forest-100">{{ site_settings.site_tagline }}</p>
+    </div>
+</div>
+
+<section class="py-12 bg-[#f8faf8]">
+    <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
+            <div>
+                {% if site_settings.about_us_image %}
+                <img src="{{ site_settings.about_us_image.url }}" alt="About {{ site_settings.site_name }}" class="w-full h-full object-cover rounded-2xl shadow-card">
+                {% else %}
+                <div class="w-full h-96 bg-forest-100 rounded-2xl shadow-card flex items-center justify-center">
+                    <i class="fas fa-paw text-forest-300 text-9xl"></i>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="flex items-center">
+                <div>
+                    <div class="prose prose-lg max-w-none text-charcoal-700">
+                        {% if site_settings.about_us_content %}
+                            {{ site_settings.about_us_content|safe }}
+                        {% else %}
+                            <h2 class="text-3xl font-bold text-charcoal-900 mb-4 font-display">Welcome to {{ site_settings.site_name }}</h2>
+                            <p class="mb-4">We are dedicated to connecting loving families with their perfect furry companions. With years of experience in responsible dog breeding and pet care, we ensure every puppy finds a safe and happy home.</p>
+                            <p class="mb-4">Our mission is to provide healthy, well-socialized puppies from trusted breeders, along with premium pet accessories to help you care for your new family member.</p>
+                            <p>We believe every dog deserves a loving home, and every family deserves a loyal companion.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Why Choose Us -->
+        <div class="bg-white rounded-2xl p-12 shadow-card mb-16 border border-forest-50">
+            <h2 class="text-3xl font-bold text-charcoal-900 mb-8 text-center font-display">Why Choose Us</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="text-center">
+                    <div class="w-20 h-20 bg-forest-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-heart text-forest-600 text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-charcoal-900 mb-3">Healthy & Happy Puppies</h3>
+                    <p class="text-charcoal-600">All our puppies are health-checked, vaccinated, and come from responsible breeders who prioritize animal welfare.</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="w-20 h-20 bg-mint-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-shield-alt text-mint-600 text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-charcoal-900 mb-3">Trusted Service</h3>
+                    <p class="text-charcoal-600">With years of experience, we've helped countless families find their perfect pet. Your satisfaction is our priority.</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="w-20 h-20 bg-gold-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-headset text-gold-500 text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-charcoal-900 mb-3">Ongoing Support</h3>
+                    <p class="text-charcoal-600">We provide guidance and support even after adoption. We're here to help you and your new pet thrive together.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Our Values -->
+        <div class="bg-gradient-to-r from-forest-600 to-forest-800 rounded-2xl p-12 text-white mb-16">
+            <h2 class="text-3xl font-bold mb-8 text-center font-display">Our Core Values</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="text-center">
+                    <i class="fas fa-check-circle text-4xl mb-3 opacity-90"></i>
+                    <h4 class="font-bold text-lg mb-2">Quality</h4>
+                    <p class="text-sm opacity-90">Only the best for your family</p>
+                </div>
+                <div class="text-center">
+                    <i class="fas fa-users text-4xl mb-3 opacity-90"></i>
+                    <h4 class="font-bold text-lg mb-2">Community</h4>
+                    <p class="text-sm opacity-90">Building lasting relationships</p>
+                </div>
+                <div class="text-center">
+                    <i class="fas fa-hand-holding-heart text-4xl mb-3 opacity-90"></i>
+                    <h4 class="font-bold text-lg mb-2">Care</h4>
+                    <p class="text-sm opacity-90">Compassion in everything we do</p>
+                </div>
+                <div class="text-center">
+                    <i class="fas fa-star text-4xl mb-3 opacity-90"></i>
+                    <h4 class="font-bold text-lg mb-2">Excellence</h4>
+                    <p class="text-sm opacity-90">Striving for the best outcomes</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Contact CTA -->
+        <div class="bg-white rounded-2xl p-12 shadow-card text-center border border-forest-50">
+            <h2 class="text-3xl font-bold text-charcoal-900 mb-4 font-display">Have Questions?</h2>
+            <p class="text-xl text-charcoal-600 mb-8">We're here to help you find your perfect companion</p>
+            
+            <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+                <a href="{% url 'contact_us' %}" class="btn-cta">
+                    Contact Us
+                </a>
+                <a href="{% url 'dog_list' %}" class="btn-cta" style="background: linear-gradient(135deg, #10b076, #058f60); box-shadow: 0 2px 8px rgba(16,176,118,.3);">
+                    Browse Puppies
+                </a>
+            </div>
+        </div>
+        
+    </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,257 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Order Confirmation - {{ site_settings.site_name }}{% endblock %}
+
+{% block content %}
+
+<section class="py-12 bg-[#f8faf8] min-h-screen">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Success Message -->
+        <div class="bg-white rounded-2xl shadow-lg p-8 mb-8 text-center">
+            <div class="mb-6">
+                <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-check text-green-600 text-4xl"></i>
+                </div>
+                <h1 class="text-4xl font-bold text-charcoal-900 mb-2 font-display">Order Confirmed!</h1>
+                <p class="text-xl text-charcoal-600">Thank you for your order</p>
+            </div>
+            
+            <div class="bg-forest-50 border-2 border-forest-200 rounded-lg p-6 mb-6">
+                <p class="text-charcoal-700 mb-2">Your order number is:</p>
+                <p class="text-3xl font-bold text-forest-600">{{ order.order_number }}</p>
+            </div>
+            
+            <p class="text-charcoal-600 mb-6">
+                A confirmation email has been sent to <strong>{{ order.email }}</strong>
+            </p>
+            
+            <button onclick="showPaymentModal()" class="bg-forest-600 hover:bg-forest-700 text-white font-bold py-4 px-8 rounded-lg text-lg transition duration-300 shadow-lg">
+                <i class="fas fa-credit-card mr-2"></i> View Payment Information
+            </button>
+        </div>
+        
+        <!-- Order Details -->
+        <div class="bg-white rounded-2xl shadow-lg p-8 mb-8">
+            <h2 class="text-2xl font-bold text-charcoal-900 mb-6 font-display">Order Details</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <h3 class="text-lg font-semibold text-charcoal-900 mb-3">Shipping Address</h3>
+                    <div class="text-charcoal-700">
+                        <p>{{ order.full_name }}</p>
+                        <p>{{ order.shipping_address }}</p>
+                        <p>{{ order.shipping_city }}, {{ order.shipping_state }} {{ order.shipping_zip }}</p>
+                        <p>{{ order.shipping_country }}</p>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold text-charcoal-900 mb-3">Contact Information</h3>
+                    <div class="text-charcoal-700">
+                        <p><i class="fas fa-envelope mr-2"></i> {{ order.email }}</p>
+                        <p><i class="fas fa-phone mr-2"></i> {{ order.phone }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-t border-charcoal-200 pt-6">
+                <h3 class="text-lg font-semibold text-charcoal-900 mb-4">Order Items</h3>
+                
+                <div class="space-y-4">
+                    {% for item in order.items.all %}
+                    <div class="flex items-center justify-between py-3 border-b border-neutral-100">
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-charcoal-900">
+                                {% if item.dog %}
+                                    {{ item.dog.name }} - {{ item.dog.breed_category.name }}
+                                {% elif item.accessory %}
+                                    {{ item.accessory.name }}
+                                {% endif %}
+                            </h4>
+                            {% if item.quantity > 1 %}
+                            <p class="text-sm text-charcoal-600">Quantity: {{ item.quantity }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="text-right">
+                            <p class="font-semibold text-charcoal-900">${{ item.subtotal|floatformat:2 }}</p>
+                            {% if item.quantity > 1 %}
+                            <p class="text-sm text-charcoal-600">${{ item.price|floatformat:2 }} each</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="mt-6 pt-6 border-t-2 border-charcoal-200">
+                    <div class="flex justify-between text-2xl font-bold">
+                        <span class="text-charcoal-900">Total</span>
+                        <span class="text-forest-600">${{ order.total_amount|floatformat:2 }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- What's Next -->
+        <div class="bg-blue-50 border border-blue-200 rounded-2xl p-8 mb-8">
+            <h2 class="text-2xl font-bold text-charcoal-900 mb-4 font-display">What's Next?</h2>
+            <ol class="list-decimal list-inside space-y-3 text-charcoal-700">
+                <li>Click "View Payment Information" to get our contact details</li>
+                <li>Contact us via email, phone, or WhatsApp to arrange payment</li>
+                <li>Once payment is confirmed, we'll process your order</li>
+                <li>You'll receive tracking information when your order ships</li>
+                {% if order.adoption_form %}
+                <li>We'll review your adoption application and contact you soon</li>
+                {% endif %}
+            </ol>
+        </div>
+        
+        <!-- Actions -->
+        <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+            {% if user.is_authenticated %}
+            <a href="{% url 'order_history' %}" class="bg-mint-600 hover:bg-mint-700 text-white font-bold py-3 px-8 rounded-lg transition duration-300 text-center">
+                View My Orders
+            </a>
+            {% endif %}
+            <a href="{% url 'home' %}" class="bg-neutral-600 hover:bg-neutral-700 text-white font-bold py-3 px-8 rounded-lg transition duration-300 text-center">
+                Continue Shopping
+            </a>
+        </div>
+        
+    </div>
+</section>
+
+<!-- Payment Information Modal -->
+<div id="paymentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="p-8">
+            <!-- Close Button -->
+            <button onclick="hidePaymentModal()" class="float-right text-charcoal-400 hover:text-charcoal-600 text-2xl">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <!-- Header -->
+            <div class="mb-6">
+                <h2 class="text-3xl font-bold text-charcoal-900 mb-2 font-display">Payment Information</h2>
+                <p class="text-charcoal-600">Please contact us to complete your payment</p>
+            </div>
+            
+            <!-- Contact Options -->
+            <div class="space-y-6">
+                
+                <!-- Email -->
+                <div class="bg-gradient-to-r from-forest-50 to-forest-100 rounded-xl p-6 border border-forest-200">
+                    <div class="flex items-center mb-3">
+                        <div class="w-12 h-12 bg-forest-600 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-envelope text-white text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-charcoal-900">Email Us</h3>
+                    </div>
+                    <p class="text-charcoal-700 mb-3">Send us an email with your order number:</p>
+                    <a href="mailto:{{ site_settings.email }}?subject=Order {{ order.order_number }} - Payment" class="text-forest-600 hover:text-forest-700 font-semibold text-lg break-all">
+                        {{ site_settings.email }}
+                    </a>
+                    <button onclick="copyToClipboard('{{ site_settings.email }}')" class="mt-3 bg-white hover:bg-[#f8faf8] text-forest-600 font-semibold py-2 px-4 rounded-lg transition border border-forest-300">
+                        <i class="fas fa-copy mr-2"></i> Copy Email
+                    </button>
+                </div>
+                
+                <!-- Phone -->
+                <div class="bg-gradient-to-r from-mint-50 to-mint-100 rounded-xl p-6 border border-mint-200">
+                    <div class="flex items-center mb-3">
+                        <div class="w-12 h-12 bg-mint-600 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-phone text-white text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-charcoal-900">Call Us</h3>
+                    </div>
+                    <p class="text-charcoal-700 mb-3">Give us a call to arrange payment:</p>
+                    <a href="tel:{{ site_settings.phone }}" class="text-mint-600 hover:text-mint-700 font-semibold text-lg">
+                        {{ site_settings.phone }}
+                    </a>
+                    <button onclick="copyToClipboard('{{ site_settings.phone }}')" class="mt-3 bg-white hover:bg-[#f8faf8] text-mint-600 font-semibold py-2 px-4 rounded-lg transition border border-mint-300">
+                        <i class="fas fa-copy mr-2"></i> Copy Phone
+                    </button>
+                </div>
+                
+                <!-- WhatsApp -->
+                {% if site_settings.whatsapp %}
+                <div class="bg-gradient-to-r from-green-50 to-green-100 rounded-xl p-6 border border-green-200">
+                    <div class="flex items-center mb-3">
+                        <div class="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center mr-4">
+                            <i class="fab fa-whatsapp text-white text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-charcoal-900">WhatsApp</h3>
+                    </div>
+                    <p class="text-charcoal-700 mb-3">Message us on WhatsApp:</p>
+                    <a href="https://wa.me/{{ site_settings.whatsapp }}?text=Hi! I need to arrange payment for Order {{ order.order_number }}" target="_blank" class="inline-block bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition">
+                        <i class="fab fa-whatsapp mr-2"></i> Open WhatsApp
+                    </a>
+                </div>
+                {% endif %}
+                
+                <!-- SMS -->
+                <div class="bg-gradient-to-r from-accent-50 to-accent-100 rounded-xl p-6 border border-accent-200">
+                    <div class="flex items-center mb-3">
+                        <div class="w-12 h-12 bg-accent-600 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-sms text-white text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-charcoal-900">Send SMS</h3>
+                    </div>
+                    <p class="text-charcoal-700 mb-3">Send us a text message:</p>
+                    <a href="sms:{{ site_settings.phone }}?body=Hi! I need to arrange payment for Order {{ order.order_number }}" class="inline-block bg-accent-600 hover:bg-accent-700 text-white font-semibold py-3 px-6 rounded-lg transition">
+                        <i class="fas fa-sms mr-2"></i> Send SMS
+                    </a>
+                </div>
+                
+            </div>
+            
+            <!-- Order Reference -->
+            <div class="mt-8 p-4 bg-charcoal-100 rounded-lg">
+                <p class="text-sm text-charcoal-700">
+                    <strong>Important:</strong> Please mention your order number <strong class="text-forest-600">{{ order.order_number }}</strong> when contacting us.
+                </p>
+            </div>
+            
+            <!-- Close Button -->
+            <button onclick="hidePaymentModal()" class="w-full mt-6 bg-neutral-600 hover:bg-neutral-700 text-white font-bold py-3 px-6 rounded-lg transition">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Show modal on page load
+    window.onload = function() {
+        showPaymentModal();
+    };
+    
+    function showPaymentModal() {
+        document.getElementById('paymentModal').classList.remove('hidden');
+    }
+    
+    function hidePaymentModal() {
+        document.getElementById('paymentModal').classList.add('hidden');
+    }
+    
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(function() {
+            // Show success message
+            alert('Copied to clipboard: ' + text);
+        }, function(err) {
+            console.error('Could not copy text: ', err);
+        });
+    }
+    
+    // Close modal when clicking outside
+    document.getElementById('paymentModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            hidePaymentModal();
+        }
+    });
+</script>
+{% endblock %}

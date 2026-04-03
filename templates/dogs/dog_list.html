@@ -1,0 +1,993 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Browse Puppies — {{ site_settings.site_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ─── Page Shell ─────────────────────────────────────────── */
+    .browse-page { background: #f8faf8; min-height: 100vh; }
+
+    /* ─── Page Header / Breadcrumb Banner ─────────────────────── */
+    .page-banner {
+        background:
+            radial-gradient(ellipse at 0% 100%, rgba(69,187,130,.2) 0%, transparent 55%),
+            radial-gradient(ellipse at 100% 0%, rgba(212,160,23,.12) 0%, transparent 55%),
+            linear-gradient(135deg, #0e4329 0%, #136641 55%, #22a066 100%);
+        padding: 2.75rem 0 2.25rem;
+        position: relative;
+        overflow: hidden;
+    }
+    .page-banner::after {
+        content: '';
+        position: absolute; inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .banner-content { position: relative; z-index: 1; }
+    .breadcrumb { display: flex; align-items: center; gap: 7px; font-size: 0.78rem; color: rgba(255,255,255,.55); margin-bottom: 10px; }
+    .breadcrumb a { color: rgba(255,255,255,.6); text-decoration: none; transition: color .2s; }
+    .breadcrumb a:hover { color: rgba(255,255,255,.95); }
+    .breadcrumb i { font-size: 0.55rem; }
+    .page-title {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 800;
+        font-size: clamp(1.75rem, 4vw, 2.5rem);
+        color: white;
+        letter-spacing: -0.02em;
+        line-height: 1.15;
+    }
+    .page-subtitle { color: rgba(255,255,255,.68); font-size: 0.9375rem; margin-top: 6px; }
+
+    /* Active filter chips */
+    .filter-chip {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: rgba(255,255,255,.14);
+        border: 1px solid rgba(255,255,255,.25);
+        color: rgba(255,255,255,.9);
+        font-size: 0.775rem;
+        font-weight: 600;
+        padding: 4px 12px;
+        border-radius: 50px;
+        backdrop-filter: blur(6px);
+        text-decoration: none;
+        transition: background .2s;
+    }
+    .filter-chip:hover { background: rgba(255,255,255,.22); color: white; }
+    .filter-chip i { font-size: 0.65rem; opacity: .7; }
+
+    /* ─── Filter Sidebar ──────────────────────────────────────── */
+    .filter-sidebar {
+        background: white;
+        border-radius: 20px;
+        border: 1.5px solid rgba(34,160,102,.08);
+        box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 4px 16px rgba(0,0,0,.05);
+        overflow: hidden;
+        position: sticky;
+        top: 80px;
+    }
+    .filter-sidebar-header {
+        padding: 18px 22px 14px;
+        border-bottom: 1px solid #f0f0ee;
+        display: flex; align-items: center; justify-content: space-between;
+    }
+    .filter-sidebar-title {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 800;
+        font-size: 1rem;
+        color: #1e2730;
+        display: flex; align-items: center; gap: 8px;
+    }
+    .filter-sidebar-title i { color: #22a066; font-size: .9rem; }
+    .filter-reset-link {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: #808d9a;
+        text-decoration: none;
+        transition: color .2s;
+        display: flex; align-items: center; gap: 5px;
+    }
+    .filter-reset-link:hover { color: #ef4444; }
+
+    .filter-body { padding: 18px 22px 22px; }
+    .filter-group { margin-bottom: 22px; }
+    .filter-label {
+        display: block;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #3c4a57;
+        text-transform: uppercase;
+        letter-spacing: .05em;
+        margin-bottom: 8px;
+    }
+    .filter-input, .filter-select {
+        width: 100%;
+        padding: 9px 12px;
+        border: 1.5px solid #e7e5e4;
+        border-radius: 11px;
+        font-size: 0.875rem;
+        color: #2d3843;
+        background: #fafaf9;
+        transition: border-color .2s, box-shadow .2s;
+        outline: none;
+        appearance: none;
+        -webkit-appearance: none;
+    }
+    .filter-input:focus, .filter-select:focus {
+        border-color: #22a066;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(34,160,102,.12);
+    }
+    .filter-input::placeholder { color: #adb5be; }
+    .select-wrap { position: relative; }
+    .select-wrap::after {
+        content: '\f078';
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        font-size: 0.65rem;
+        color: #808d9a;
+        position: absolute;
+        right: 12px; top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+    }
+    .range-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .range-input {
+        padding: 9px 10px;
+        border: 1.5px solid #e7e5e4;
+        border-radius: 11px;
+        font-size: 0.875rem;
+        color: #2d3843;
+        background: #fafaf9;
+        width: 100%;
+        transition: border-color .2s, box-shadow .2s;
+        outline: none;
+    }
+    .range-input:focus {
+        border-color: #22a066;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(34,160,102,.12);
+    }
+    .range-input::placeholder { color: #adb5be; font-size: .82rem; }
+
+    .btn-apply {
+        width: 100%;
+        background: linear-gradient(135deg, #22a066, #136641);
+        color: white;
+        font-weight: 700;
+        font-size: 0.875rem;
+        padding: 10px;
+        border-radius: 12px;
+        border: none;
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        box-shadow: 0 2px 10px rgba(34,160,102,.35);
+        transition: all .2s ease;
+    }
+    .btn-apply:hover {
+        box-shadow: 0 4px 18px rgba(34,160,102,.5);
+        transform: translateY(-1px);
+    }
+    .btn-reset {
+        width: 100%;
+        background: #f5f5f4;
+        color: #4a5968;
+        font-weight: 600;
+        font-size: 0.875rem;
+        padding: 10px;
+        border-radius: 12px;
+        border: none;
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        transition: background .2s;
+        text-decoration: none;
+        margin-top: 8px;
+    }
+    .btn-reset:hover { background: #e7e5e4; }
+
+    /* Mobile filter toggle */
+    .mobile-filter-btn {
+        display: flex; align-items: center; gap: 8px;
+        background: white;
+        border: 1.5px solid rgba(34,160,102,.2);
+        color: #136641;
+        font-weight: 700;
+        font-size: 0.875rem;
+        padding: 9px 16px;
+        border-radius: 12px;
+        cursor: pointer;
+        box-shadow: 0 1px 4px rgba(0,0,0,.05);
+        transition: all .2s;
+    }
+    .mobile-filter-btn:hover { background: #f0faf4; }
+
+    /* ─── Results Header Bar ──────────────────────────────────── */
+    .results-bar {
+        background: white;
+        border-radius: 14px;
+        border: 1.5px solid rgba(34,160,102,.07);
+        padding: 12px 18px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 4px rgba(0,0,0,.04);
+    }
+    .results-count {
+        font-size: 0.875rem;
+        color: #4a5968;
+        font-weight: 500;
+    }
+    .results-count strong { color: #1e2730; font-weight: 700; }
+    .view-toggle { display: flex; gap: 4px; }
+    .view-btn {
+        width: 34px; height: 34px;
+        border-radius: 9px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.82rem;
+        color: #808d9a;
+        background: transparent;
+        border: 1.5px solid #e7e5e4;
+        cursor: pointer;
+        transition: all .2s;
+    }
+    .view-btn.active, .view-btn:hover {
+        background: #f0faf4;
+        border-color: #b3e7c9;
+        color: #136641;
+    }
+
+    /* ─── Dog Cards ───────────────────────────────────────────── */
+    .dog-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        border: 1.5px solid rgba(34,160,102,.07);
+        box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 4px 12px rgba(0,0,0,.05);
+        transition: all .3s ease;
+        position: relative;
+    }
+    .dog-card:hover {
+        box-shadow: 0 8px 32px rgba(0,0,0,.1), 0 2px 10px rgba(34,160,102,.1);
+        transform: translateY(-5px);
+        border-color: rgba(34,160,102,.2);
+    }
+    .dog-card-img {
+        overflow: hidden;
+        position: relative;
+        background: #f0faf4;
+    }
+    .dog-card-img img { width: 100%; height: 220px; object-fit: cover; transition: transform .5s ease; display: block; }
+    .dog-card:hover .dog-card-img img { transform: scale(1.06); }
+
+    /* Overlay actions on image */
+    .card-overlay-actions {
+        position: absolute;
+        top: 10px; right: 10px;
+        display: flex; flex-direction: column; gap: 6px;
+        opacity: 0;
+        transform: translateX(8px);
+        transition: all .25s ease;
+        z-index: 5;
+    }
+    .dog-card:hover .card-overlay-actions { opacity: 1; transform: translateX(0); }
+    .overlay-btn {
+        width: 34px; height: 34px;
+        background: white;
+        border-radius: 9px;
+        display: flex; align-items: center; justify-content: center;
+        color: #3c4a57;
+        font-size: 0.78rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,.14);
+        transition: background .15s, color .15s;
+        text-decoration: none;
+        border: none; cursor: pointer;
+    }
+    .overlay-btn:hover { background: #22a066; color: white; }
+    .overlay-btn.heart:hover { background: #ef4444; color: white; }
+
+    /* Card image tag (new / hot) */
+    .card-tag {
+        position: absolute;
+        top: 10px; left: 10px;
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+        padding: 3px 9px;
+        border-radius: 6px;
+        z-index: 5;
+    }
+    .card-tag-new { background: #22a066; color: white; }
+    .card-tag-featured { background: #d4a017; color: white; }
+
+    .dog-card-body { padding: 16px 18px 18px; }
+
+    .breed-pill {
+        display: inline-flex; align-items: center; gap: 5px;
+        background: #f0faf4;
+        color: #136641;
+        font-size: 0.7rem;
+        font-weight: 700;
+        padding: 3px 9px;
+        border-radius: 50px;
+        border: 1px solid #b3e7c9;
+        margin-bottom: 9px;
+    }
+    .breed-pill i { font-size: .58rem; }
+
+    .dog-name {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 700;
+        font-size: 1rem;
+        color: #1e2730;
+        margin-bottom: 9px;
+        line-height: 1.3;
+    }
+    .dog-name a { text-decoration: none; transition: color .2s; }
+    .dog-name a:hover { color: #136641; }
+
+    .dog-meta { display: flex; flex-wrap: wrap; gap: 10px; font-size: 0.775rem; color: #5f6e7c; margin-bottom: 10px; }
+    .dog-meta span { display: flex; align-items: center; gap: 5px; }
+    .dog-meta i { color: #22a066; font-size: .72rem; }
+
+    .stars { display: flex; align-items: center; gap: 2px; margin-bottom: 12px; }
+    .stars i { font-size: 0.78rem; }
+    .stars .on  { color: #d4a017; }
+    .stars .off { color: #e7e5e4; }
+    .stars .count { font-size: 0.75rem; color: #808d9a; margin-left: 5px; }
+
+    .card-footer {
+        display: flex; align-items: center; justify-content: space-between;
+        padding-top: 12px;
+        border-top: 1px solid #f5f5f4;
+    }
+    .dog-price {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 800;
+        font-size: 1.3rem;
+        color: #136641;
+        letter-spacing: -0.01em;
+    }
+    .btn-adopt {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: linear-gradient(135deg, #22a066, #136641);
+        color: white;
+        font-weight: 700;
+        font-size: 0.8rem;
+        padding: 8px 16px;
+        border-radius: 10px;
+        text-decoration: none;
+        box-shadow: 0 2px 8px rgba(34,160,102,.3);
+        transition: all .2s ease;
+    }
+    .btn-adopt:hover {
+        box-shadow: 0 4px 16px rgba(34,160,102,.5);
+        transform: translateY(-1px);
+    }
+    .sold-label {
+        font-size: 0.775rem;
+        font-weight: 700;
+        color: #ef4444;
+        background: #fff5f5;
+        padding: 6px 12px;
+        border-radius: 9px;
+        border: 1px solid #fecaca;
+    }
+
+    /* ─── Empty State ─────────────────────────────────────────── */
+    .empty-state {
+        background: white;
+        border-radius: 20px;
+        border: 1.5px dashed rgba(34,160,102,.2);
+        padding: 60px 24px;
+        text-align: center;
+    }
+    .empty-icon-wrap {
+        width: 80px; height: 80px;
+        background: #f0faf4;
+        border-radius: 20px;
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 20px;
+        font-size: 2rem;
+        color: #7dd4a8;
+    }
+
+    /* ─── Pagination ──────────────────────────────────────────── */
+    .pagination { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; justify-content: center; }
+    .page-btn {
+        min-width: 38px; height: 38px;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 10px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all .2s;
+        padding: 0 12px;
+    }
+    .page-btn-default {
+        background: white;
+        color: #4a5968;
+        border: 1.5px solid #e7e5e4;
+        box-shadow: 0 1px 3px rgba(0,0,0,.04);
+    }
+    .page-btn-default:hover {
+        background: #f0faf4;
+        border-color: #b3e7c9;
+        color: #136641;
+    }
+    .page-btn-active {
+        background: linear-gradient(135deg, #22a066, #136641);
+        color: white;
+        border: none;
+        box-shadow: 0 2px 10px rgba(34,160,102,.35);
+    }
+    .page-btn-nav {
+        background: white;
+        color: #136641;
+        border: 1.5px solid rgba(34,160,102,.25);
+    }
+    .page-btn-nav:hover {
+        background: #f0faf4;
+        border-color: #22a066;
+    }
+    .page-ellipsis { color: #adb5be; font-size: .875rem; padding: 0 4px; }
+
+    /* ─── Mobile filter panel ─────────────────────────────────── */
+    #mobile-filter-panel {
+        position: fixed; inset: 0;
+        z-index: 300;
+        display: none;
+    }
+    #mobile-filter-panel.open { display: block; }
+    #mobile-filter-overlay {
+        position: absolute; inset: 0;
+        background: rgba(0,0,0,.45);
+        backdrop-filter: blur(3px);
+    }
+    #mobile-filter-drawer {
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        width: min(360px, 92vw);
+        background: white;
+        overflow-y: auto;
+        box-shadow: 4px 0 30px rgba(0,0,0,.15);
+        display: flex; flex-direction: column;
+    }
+
+    /* Grid / List toggle */
+    .dogs-grid.list-view { grid-template-columns: 1fr !important; }
+    .dogs-grid.list-view .dog-card { display: flex; flex-direction: row; }
+    .dogs-grid.list-view .dog-card-img { width: 200px; flex-shrink: 0; }
+    .dogs-grid.list-view .dog-card-img img { height: 100%; }
+    .dogs-grid.list-view .dog-card-body { flex: 1; }
+    @media (max-width: 600px) {
+        .dogs-grid.list-view .dog-card { flex-direction: column; }
+        .dogs-grid.list-view .dog-card-img { width: 100%; }
+        .dogs-grid.list-view .dog-card-img img { height: 200px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="browse-page">
+
+    <!-- ═══ Page Banner ═══════════════════════════════════════════ -->
+    <div class="page-banner">
+        <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 banner-content">
+            <div class="breadcrumb">
+                <a href="{% url 'home' %}">Home</a>
+                <i class="fas fa-chevron-right"></i>
+                <span style="color:rgba(255,255,255,.85);">Browse Puppies</span>
+            </div>
+            <h1 class="page-title">Browse Puppies</h1>
+            <p class="page-subtitle">Find your perfect furry companion from our curated selection</p>
+
+            <!-- Active filter chips -->
+            {% if request.GET.search or request.GET.breed or request.GET.gender or request.GET.size %}
+            <div class="flex flex-wrap gap-2 mt-4">
+                {% if request.GET.search %}
+                <span class="filter-chip">
+                    <i class="fas fa-search"></i> "{{ request.GET.search }}"
+                    <a href="?{% for key,val in request.GET.items %}{% if key != 'search' %}{{ key }}={{ val }}&{% endif %}{% endfor %}" style="color:inherit;opacity:.7;">
+                        <i class="fas fa-times"></i>
+                    </a>
+                </span>
+                {% endif %}
+                {% if request.GET.gender %}
+                <span class="filter-chip">
+                    <i class="fas fa-venus-mars"></i> {{ request.GET.gender|capfirst }}
+                </span>
+                {% endif %}
+                {% if request.GET.size %}
+                <span class="filter-chip">
+                    <i class="fas fa-ruler"></i> {{ request.GET.size|capfirst }}
+                </span>
+                {% endif %}
+                <a href="{% url 'dog_list' %}" class="filter-chip" style="background:rgba(239,68,68,.2);border-color:rgba(239,68,68,.4);">
+                    <i class="fas fa-times"></i> Clear all
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+
+    <!-- ═══ Main Content ══════════════════════════════════════════ -->
+    <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- Mobile filter bar -->
+        <div class="flex items-center justify-between gap-3 mb-5 lg:hidden">
+            <button class="mobile-filter-btn" id="open-mobile-filter">
+                <i class="fas fa-sliders-h"></i> Filters
+                {% if request.GET.breed or request.GET.gender or request.GET.size or request.GET.min_price or request.GET.max_price %}
+                <span style="background:#22a066;color:white;font-size:.65rem;font-weight:800;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;">!</span>
+                {% endif %}
+            </button>
+            <div class="select-wrap" style="width:180px;">
+                <select onchange="window.location.href=this.value" class="filter-select" style="font-size:.8125rem;padding:9px 32px 9px 10px;">
+                    <option value="{% url 'dog_list' %}?sort=-created_at{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" {% if request.GET.sort == '-created_at' or not request.GET.sort %}selected{% endif %}>Newest First</option>
+                    <option value="{% url 'dog_list' %}?sort=price_low{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" {% if request.GET.sort == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                    <option value="{% url 'dog_list' %}?sort=price_high{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" {% if request.GET.sort == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                    <option value="{% url 'dog_list' %}?sort=name{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" {% if request.GET.sort == 'name' %}selected{% endif %}>Name A–Z</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-7">
+
+            <!-- ─── Sidebar ──────────────────────────────────────── -->
+            <aside class="hidden lg:block lg:w-[270px] shrink-0">
+                <div class="filter-sidebar">
+                    <div class="filter-sidebar-header">
+                        <div class="filter-sidebar-title">
+                            <i class="fas fa-sliders-h"></i> Filters
+                        </div>
+                        <a href="{% url 'dog_list' %}" class="filter-reset-link">
+                            <i class="fas fa-rotate-left"></i> Reset
+                        </a>
+                    </div>
+                    <div class="filter-body">
+                        <form method="get" action="{% url 'dog_list' %}" id="filter-form">
+
+                            <!-- Search -->
+                            <div class="filter-group">
+                                <label class="filter-label">Search</label>
+                                <div style="position:relative;">
+                                    <input type="text" name="search" value="{{ request.GET.search }}"
+                                        placeholder="Name or breed…"
+                                        class="filter-input" style="padding-left:34px;">
+                                    <i class="fas fa-search" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#adb5be;font-size:.78rem;pointer-events:none;"></i>
+                                </div>
+                            </div>
+
+                            <!-- Breed -->
+                            <div class="filter-group">
+                                <label class="filter-label">Breed</label>
+                                <div class="select-wrap">
+                                    <select name="breed" class="filter-select">
+                                        <option value="">All Breeds</option>
+                                        {% for category in breeds %}
+                                        <option value="{{ category.id }}" {% if request.GET.breed == category.id|stringformat:"s" %}selected{% endif %}>{{ category.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Gender -->
+                            <div class="filter-group">
+                                <label class="filter-label">Gender</label>
+                                <div class="flex gap-2">
+                                    <label class="flex-1">
+                                        <input type="radio" name="gender" value="" {% if not request.GET.gender %}checked{% endif %} class="hidden peer">
+                                        <div class="peer-checked:bg-forest-500 peer-checked:text-white peer-checked:border-forest-500 border-2 border-gray-200 rounded-xl py-2 text-center text-xs font-700 text-gray-500 cursor-pointer transition-all hover:border-forest-300" style="font-weight:700;">All</div>
+                                    </label>
+                                    <label class="flex-1">
+                                        <input type="radio" name="gender" value="male" {% if request.GET.gender == 'male' %}checked{% endif %} class="hidden peer">
+                                        <div class="peer-checked:bg-forest-500 peer-checked:text-white peer-checked:border-forest-500 border-2 border-gray-200 rounded-xl py-2 text-center text-xs font-700 text-gray-500 cursor-pointer transition-all hover:border-forest-300" style="font-weight:700;">
+                                            <i class="fas fa-mars mr-1"></i> Male
+                                        </div>
+                                    </label>
+                                    <label class="flex-1">
+                                        <input type="radio" name="gender" value="female" {% if request.GET.gender == 'female' %}checked{% endif %} class="hidden peer">
+                                        <div class="peer-checked:bg-forest-500 peer-checked:text-white peer-checked:border-forest-500 border-2 border-gray-200 rounded-xl py-2 text-center text-xs font-700 text-gray-500 cursor-pointer transition-all hover:border-forest-300" style="font-weight:700;">
+                                            <i class="fas fa-venus mr-1"></i> Female
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Size -->
+                            <div class="filter-group">
+                                <label class="filter-label">Size</label>
+                                <div class="select-wrap">
+                                    <select name="size" class="filter-select">
+                                        <option value="">All Sizes</option>
+                                        <option value="small"  {% if request.GET.size == 'small'  %}selected{% endif %}>Small (0–25 lbs)</option>
+                                        <option value="medium" {% if request.GET.size == 'medium' %}selected{% endif %}>Medium (26–60 lbs)</option>
+                                        <option value="large"  {% if request.GET.size == 'large'  %}selected{% endif %}>Large (61–100 lbs)</option>
+                                        <option value="giant"  {% if request.GET.size == 'giant'  %}selected{% endif %}>Giant (100+ lbs)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Price Range -->
+                            <div class="filter-group">
+                                <label class="filter-label">Price Range ($)</label>
+                                <div class="range-row">
+                                    <input type="number" name="min_price" value="{{ request.GET.min_price }}" placeholder="Min" class="range-input">
+                                    <input type="number" name="max_price" value="{{ request.GET.max_price }}" placeholder="Max" class="range-input">
+                                </div>
+                            </div>
+
+                            <!-- Age Range -->
+                            <div class="filter-group">
+                                <label class="filter-label">Age (months)</label>
+                                <div class="range-row">
+                                    <input type="number" name="age_min" value="{{ request.GET.age_min }}" placeholder="Min" class="range-input">
+                                    <input type="number" name="age_max" value="{{ request.GET.age_max }}" placeholder="Max" class="range-input">
+                                </div>
+                            </div>
+
+                            <!-- Sort -->
+                            <div class="filter-group" style="margin-bottom:24px;">
+                                <label class="filter-label">Sort By</label>
+                                <div class="select-wrap">
+                                    <select name="sort" class="filter-select">
+                                        <option value="-created_at" {% if request.GET.sort == '-created_at' or not request.GET.sort %}selected{% endif %}>Newest First</option>
+                                        <option value="price_low"   {% if request.GET.sort == 'price_low'   %}selected{% endif %}>Price: Low to High</option>
+                                        <option value="price_high"  {% if request.GET.sort == 'price_high'  %}selected{% endif %}>Price: High to Low</option>
+                                        <option value="name"        {% if request.GET.sort == 'name'        %}selected{% endif %}>Name A–Z</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn-apply">
+                                <i class="fas fa-check"></i> Apply Filters
+                            </button>
+                            <a href="{% url 'dog_list' %}" class="btn-reset">
+                                <i class="fas fa-rotate-left"></i> Reset All
+                            </a>
+                        </form>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- ─── Results Area ─────────────────────────────────── -->
+            <div class="flex-1 min-w-0">
+
+                {% if dogs %}
+                <!-- Results top bar -->
+                <div class="results-bar">
+                    <p class="results-count">
+                        Showing <strong>{{ dogs.start_index }}–{{ dogs.end_index }}</strong> of
+                        <strong>{{ dogs.paginator.count }}</strong> puppies
+                    </p>
+                    <div class="flex items-center gap-3">
+                        <!-- Sort (desktop) -->
+                        <div class="select-wrap hidden lg:block" style="width:170px;">
+                            <select id="sort-select" class="filter-select" style="font-size:.8125rem;padding:8px 30px 8px 10px;">
+                                <option value="-created_at" {% if request.GET.sort == '-created_at' or not request.GET.sort %}selected{% endif %}>Newest First</option>
+                                <option value="price_low"   {% if request.GET.sort == 'price_low'   %}selected{% endif %}>Price: Low → High</option>
+                                <option value="price_high"  {% if request.GET.sort == 'price_high'  %}selected{% endif %}>Price: High → Low</option>
+                                <option value="name"        {% if request.GET.sort == 'name'        %}selected{% endif %}>Name A–Z</option>
+                            </select>
+                        </div>
+                        <!-- View toggle -->
+                        <div class="view-toggle">
+                            <button class="view-btn active" id="grid-view-btn" title="Grid view">
+                                <i class="fas fa-th"></i>
+                            </button>
+                            <button class="view-btn" id="list-view-btn" title="List view">
+                                <i class="fas fa-list"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dog cards grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 dogs-grid" id="dogs-grid">
+                    {% for dog in dogs %}
+                    <div class="dog-card">
+                        <!-- Sold badge -->
+                        {% if dog.is_sold %}
+                        <div class="sold-badge">SOLD</div>
+                        {% endif %}
+
+                        <!-- New tag (freshly listed) -->
+                        {% if not dog.is_sold %}
+                        <div class="card-tag card-tag-new" style="display:none;" data-new-tag>NEW</div>
+                        {% endif %}
+
+                        <!-- Image -->
+                        <div class="dog-card-img">
+                            <a href="{% url 'dog_detail' dog.slug %}">
+                                {% if dog.images.all %}
+                                <img src="{{ dog.images.first.image.url }}" alt="{{ dog.name }}">
+                                {% else %}
+                                <div style="height:220px;display:flex;align-items:center;justify-content:center;background:#f0faf4;">
+                                    <i class="fas fa-dog" style="font-size:3.5rem;color:#b3e7c9;"></i>
+                                </div>
+                                {% endif %}
+                            </a>
+
+                            <!-- Overlay action buttons -->
+                            <div class="card-overlay-actions">
+                                {% if user.is_authenticated %}
+                                <a href="{% url 'add_to_wishlist' 'dog' dog.id %}" class="overlay-btn heart" title="Save to Wishlist">
+                                    <i class="far fa-heart"></i>
+                                </a>
+                                {% endif %}
+                                <a href="{% url 'dog_detail' dog.slug %}" class="overlay-btn" title="View Details">
+                                    <i class="far fa-eye"></i>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Card body -->
+                        <div class="dog-card-body">
+                            <div class="breed-pill">
+                                <i class="fas fa-paw"></i>
+                                {{ dog.breed_category.name }}
+                            </div>
+
+                            <h3 class="dog-name">
+                                <a href="{% url 'dog_detail' dog.slug %}">{{ dog.name }}</a>
+                            </h3>
+
+                            <div class="dog-meta">
+                                <span><i class="fas fa-calendar-alt"></i> {{ dog.age_months }} months</span>
+                                <span><i class="fas fa-venus-mars"></i> {{ dog.get_gender_display }}</span>
+                            </div>
+
+                            <div class="stars">
+                                {% with avg=dog.average_rating %}
+                                {% for i in "12345" %}
+                                <i class="fas fa-star {% if forloop.counter <= avg %}on{% else %}off{% endif %}"></i>
+                                {% endfor %}
+                                {% endwith %}
+                                <span class="count">({{ dog.rating_count }})</span>
+                            </div>
+
+                            <div class="card-footer">
+                                <div class="dog-price">${{ dog.price|floatformat:0|intcomma }}</div>
+                                {% if not dog.is_sold %}
+                                <a href="{% url 'add_to_cart' 'dog' dog.id %}" class="btn-adopt">
+                                    <i class="fas fa-heart" style="font-size:.72rem;"></i> Adopt
+                                </a>
+                                {% else %}
+                                <span class="sold-label">Sold</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+
+                <!-- ─── Pagination ────────────────────────────────── -->
+                {% if dogs.has_other_pages %}
+                <div class="mt-12 flex justify-center">
+                    <nav class="pagination" aria-label="Pagination">
+
+                        {% if dogs.has_previous %}
+                        <a href="?page={{ dogs.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.breed %}&breed={{ request.GET.breed }}{% endif %}{% if request.GET.gender %}&gender={{ request.GET.gender }}{% endif %}{% if request.GET.size %}&size={{ request.GET.size }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}"
+                            class="page-btn page-btn-nav">
+                            <i class="fas fa-chevron-left" style="font-size:.7rem;"></i>
+                        </a>
+                        {% endif %}
+
+                        {% for num in dogs.paginator.page_range %}
+                            {% if dogs.number == num %}
+                            <span class="page-btn page-btn-active">{{ num }}</span>
+                            {% elif num > dogs.number|add:'-3' and num < dogs.number|add:'3' %}
+                            <a href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.breed %}&breed={{ request.GET.breed }}{% endif %}{% if request.GET.gender %}&gender={{ request.GET.gender }}{% endif %}{% if request.GET.size %}&size={{ request.GET.size }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}"
+                                class="page-btn page-btn-default">{{ num }}</a>
+                            {% elif num == 1 or num == dogs.paginator.num_pages %}
+                            <a href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}"
+                                class="page-btn page-btn-default">{{ num }}</a>
+                            {% elif num == dogs.number|add:'-3' or num == dogs.number|add:'3' %}
+                            <span class="page-ellipsis">…</span>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if dogs.has_next %}
+                        <a href="?page={{ dogs.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.breed %}&breed={{ request.GET.breed }}{% endif %}{% if request.GET.gender %}&gender={{ request.GET.gender }}{% endif %}{% if request.GET.size %}&size={{ request.GET.size }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}"
+                            class="page-btn page-btn-nav">
+                            <i class="fas fa-chevron-right" style="font-size:.7rem;"></i>
+                        </a>
+                        {% endif %}
+                    </nav>
+                </div>
+                {% endif %}
+
+
+                {% else %}
+                <!-- ─── Empty State ────────────────────────────────── -->
+                <div class="empty-state">
+                    <div class="empty-icon-wrap">
+                        <i class="fas fa-dog"></i>
+                    </div>
+                    <h3 style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1.35rem;color:#1e2730;margin-bottom:8px;">No puppies found</h3>
+                    <p style="color:#5f6e7c;font-size:.9375rem;max-width:380px;margin:0 auto 24px;line-height:1.6;">
+                        We couldn't find any puppies matching your filters. Try broadening your search or clearing the filters.
+                    </p>
+                    <div class="flex flex-wrap items-center justify-center gap-3">
+                        <a href="{% url 'dog_list' %}" class="btn-adopt" style="font-size:.875rem;padding:10px 22px;">
+                            <i class="fas fa-rotate-left" style="font-size:.78rem;"></i> Clear Filters
+                        </a>
+                        <a href="{% url 'contact_us' %}" style="display:inline-flex;align-items:center;gap:7px;background:white;border:1.5px solid rgba(34,160,102,.25);color:#136641;font-weight:700;font-size:.875rem;padding:10px 22px;border-radius:11px;text-decoration:none;transition:all .2s;">
+                            <i class="fas fa-headset" style="font-size:.78rem;"></i> Contact Us
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+
+            </div><!-- /results -->
+        </div><!-- /flex row -->
+    </div><!-- /container -->
+
+
+    <!-- ═══ Mobile Filter Drawer ══════════════════════════════════ -->
+    <div id="mobile-filter-panel">
+        <div id="mobile-filter-overlay"></div>
+        <div id="mobile-filter-drawer">
+            <!-- Drawer header -->
+            <div style="padding:16px 20px 12px;border-bottom:1px solid #f0f0ee;display:flex;align-items:center;justify-content:space-between;background:white;position:sticky;top:0;z-index:1;">
+                <div style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1rem;color:#1e2730;display:flex;align-items:center;gap:8px;">
+                    <i class="fas fa-sliders-h" style="color:#22a066;"></i> Filters
+                </div>
+                <button id="close-mobile-filter" style="width:34px;height:34px;border-radius:9px;background:#f5f5f4;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#4a5968;font-size:.82rem;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Drawer body (reuse same form) -->
+            <div style="padding:18px 20px 100px;overflow-y:auto;flex:1;">
+                <form method="get" action="{% url 'dog_list' %}" id="mobile-filter-form">
+                    <!-- Search -->
+                    <div class="filter-group">
+                        <label class="filter-label">Search</label>
+                        <div style="position:relative;">
+                            <input type="text" name="search" value="{{ request.GET.search }}" placeholder="Name or breed…" class="filter-input" style="padding-left:34px;">
+                            <i class="fas fa-search" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#adb5be;font-size:.78rem;pointer-events:none;"></i>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Breed</label>
+                        <div class="select-wrap">
+                            <select name="breed" class="filter-select">
+                                <option value="">All Breeds</option>
+                                {% for category in breeds %}
+                                <option value="{{ category.id }}" {% if request.GET.breed == category.id|stringformat:"s" %}selected{% endif %}>{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Gender</label>
+                        <div class="select-wrap">
+                            <select name="gender" class="filter-select">
+                                <option value="">All Genders</option>
+                                <option value="male" {% if request.GET.gender == 'male' %}selected{% endif %}>Male</option>
+                                <option value="female" {% if request.GET.gender == 'female' %}selected{% endif %}>Female</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Size</label>
+                        <div class="select-wrap">
+                            <select name="size" class="filter-select">
+                                <option value="">All Sizes</option>
+                                <option value="small"  {% if request.GET.size == 'small'  %}selected{% endif %}>Small (0–25 lbs)</option>
+                                <option value="medium" {% if request.GET.size == 'medium' %}selected{% endif %}>Medium (26–60 lbs)</option>
+                                <option value="large"  {% if request.GET.size == 'large'  %}selected{% endif %}>Large (61–100 lbs)</option>
+                                <option value="giant"  {% if request.GET.size == 'giant'  %}selected{% endif %}>Giant (100+ lbs)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Price Range ($)</label>
+                        <div class="range-row">
+                            <input type="number" name="min_price" value="{{ request.GET.min_price }}" placeholder="Min" class="range-input">
+                            <input type="number" name="max_price" value="{{ request.GET.max_price }}" placeholder="Max" class="range-input">
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Age (months)</label>
+                        <div class="range-row">
+                            <input type="number" name="age_min" value="{{ request.GET.age_min }}" placeholder="Min" class="range-input">
+                            <input type="number" name="age_max" value="{{ request.GET.age_max }}" placeholder="Max" class="range-input">
+                        </div>
+                    </div>
+                    <div class="filter-group" style="margin-bottom:24px;">
+                        <label class="filter-label">Sort By</label>
+                        <div class="select-wrap">
+                            <select name="sort" class="filter-select">
+                                <option value="-created_at" {% if not request.GET.sort or request.GET.sort == '-created_at' %}selected{% endif %}>Newest First</option>
+                                <option value="price_low"   {% if request.GET.sort == 'price_low'  %}selected{% endif %}>Price: Low to High</option>
+                                <option value="price_high"  {% if request.GET.sort == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                                <option value="name"        {% if request.GET.sort == 'name'       %}selected{% endif %}>Name A–Z</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-apply">
+                        <i class="fas fa-check"></i> Apply Filters
+                    </button>
+                    <a href="{% url 'dog_list' %}" class="btn-reset">
+                        <i class="fas fa-rotate-left"></i> Reset All
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /browse-page -->
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+(function() {
+    'use strict';
+
+    // ── Mobile filter panel ───────────────────────────────────
+    const openBtn   = document.getElementById('open-mobile-filter');
+    const closeBtn  = document.getElementById('close-mobile-filter');
+    const panel     = document.getElementById('mobile-filter-panel');
+    const overlay   = document.getElementById('mobile-filter-overlay');
+
+    function openFilter()  { panel.classList.add('open'); document.body.style.overflow = 'hidden'; }
+    function closeFilter() { panel.classList.remove('open'); document.body.style.overflow = ''; }
+
+    if (openBtn)  openBtn.addEventListener('click', openFilter);
+    if (closeBtn) closeBtn.addEventListener('click', closeFilter);
+    if (overlay)  overlay.addEventListener('click', closeFilter);
+
+    // ── Sort select (desktop quick-sort) ─────────────────────
+    const sortSelect = document.getElementById('sort-select');
+    if (sortSelect) {
+        sortSelect.addEventListener('change', function() {
+            const url = new URL(window.location.href);
+            url.searchParams.set('sort', this.value);
+            url.searchParams.delete('page');
+            window.location.href = url.toString();
+        });
+    }
+
+    // ── Grid / List view toggle ───────────────────────────────
+    const gridBtn  = document.getElementById('grid-view-btn');
+    const listBtn  = document.getElementById('list-view-btn');
+    const dogsGrid = document.getElementById('dogs-grid');
+
+    const savedView = localStorage.getItem('dogListView') || 'grid';
+    if (savedView === 'list' && dogsGrid) applyListView();
+
+    function applyGridView() {
+        dogsGrid.classList.remove('list-view');
+        gridBtn.classList.add('active');
+        listBtn.classList.remove('active');
+        localStorage.setItem('dogListView', 'grid');
+    }
+    function applyListView() {
+        dogsGrid.classList.add('list-view');
+        listBtn.classList.add('active');
+        gridBtn.classList.remove('active');
+        localStorage.setItem('dogListView', 'list');
+    }
+
+    if (gridBtn) gridBtn.addEventListener('click', applyGridView);
+    if (listBtn) listBtn.addEventListener('click', applyListView);
+
+    // ── Auto-submit filter on select change (desktop) ────────
+    const filterForm = document.getElementById('filter-form');
+    if (filterForm) {
+        filterForm.querySelectorAll('select').forEach(sel => {
+            sel.addEventListener('change', () => filterForm.submit());
+        });
+    }
+
+})();
+</script>
+{% endblock %}

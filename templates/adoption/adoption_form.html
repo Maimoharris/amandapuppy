@@ -1,0 +1,258 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Adoption Application - {{ dog.name }} - {{ site_settings.site_name }}{% endblock %}
+
+{% block content %}
+
+<section class="py-12 bg-[#f8faf8] min-h-screen">
+    <div class="max-w-4xl mx-auto px-4">
+        
+        <!-- Dog Info Header -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+            <div class="flex items-center space-x-6">
+                {% if dog.images.all %}
+                <img src="{{ dog.images.first.image.url }}" alt="{{ dog.name }}" class="w-32 h-32 object-cover rounded-lg">
+                {% else %}
+                <div class="w-32 h-32 bg-forest-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-dog text-forest-300 text-4xl"></i>
+                </div>
+                {% endif %}
+                <div>
+                    <h1 class="text-3xl font-bold text-charcoal-900 mb-2 font-display">Adoption Application</h1>
+                    <p class="text-xl text-charcoal-600">For: {{ dog.name }} - {{ dog.breed_category.name }}</p>
+                    <p class="text-lg font-bold text-forest-600 mt-2">${{ dog.price|floatformat:0 }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Form -->
+        <div class="bg-white rounded-2xl shadow-lg p-8">
+            
+            <!-- Display non-field errors at the top -->
+            {% if form.non_field_errors %}
+                <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <ul class="list-disc list-inside text-red-600">
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+            
+            <form method="post" action="">
+                {% csrf_token %}
+                
+                <!-- Personal Information -->
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-charcoal-900 mb-6 font-display">Personal Information</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-charcoal-700 mb-2">Full Name *</label>
+                            {% render_field form.full_name class="w-full px-4 py-3 border border-charcoal-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-500" %}
+                            <!-- Display field errors -->
+                            {% if form.full_name.errors %}
+                                <ul class="mt-1 text-red-600 text-sm">
+                                    {% for error in form.full_name.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-charcoal-700 mb-2">Email *</label>
+                            {% render_field form.email class="w-full px-4 py-3 border border-charcoal-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-500" %}
+                            <!-- Display field errors -->
+                            {% if form.email.errors %}
+                                <ul class="mt-1 text-red-600 text-sm">
+                                    {% for error in form.email.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-charcoal-700 mb-2">Phone *</label>
+                            {% render_field form.phone class="w-full px-4 py-3 border border-charcoal-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-500" placeholder="+12125552368" %}
+                            <!-- Display field errors -->
+                            {% if form.phone.errors %}
+                                <ul class="mt-1 text-red-600 text-sm">
+                                    {% for error in form.phone.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-charcoal-700 mb-2">Address *</label>
+                            {% render_field form.address class="w-full px-4 py-3 border border-charcoal-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-500" rows="3" %}
+                            <!-- Display field errors -->
+                            {% if form.address.errors %}
+                                <ul class="mt-1 text-red-600 text-sm">
+                                    {% for error in form.address.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Housing Information -->
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-charcoal-900 mb-6 font-display">Housing Information</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-charcoal-700 mb-2">Housing Type *</label>
+                            {% render_field form.housing_type class="w-full px-4 py-3 border border-charcoal-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-500" %}
+                            {% if form.housing_type.errors %}
+                                <ul class="mt-1 text-red-600 text-sm">
+                                    {% for error in form.housing_type.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-charcoal-700 mb-2">Own or Rent *</label>
+                            {% render_field form.own_or_rent class="w-full px-4 py-3 border border-charcoal-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-500" %}
+                            {% if form.own_or_rent.errors %}
+                                <ul class="mt-1 text-red-600 text-sm">
+                                    {% for error in form.own_or_rent.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <label class="flex items-center space-x-2">
+                                {% render_field form.has_yard class="w-5 h-5 text-forest-600" %}
+                                <span class="text-sm font-semibold text-charcoal-700">I have a yard</span>
+                            </label>
+                        </div>
+                        <div>
+                            <label class="flex items-center space-x-2">
+                                {% render_field form.yard_fenced class="w-5 h-5 text-forest-600" %}
+                                <span class="text-sm font-semibold text-charcoal-700">Yard is fenced</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Experience -->
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-charcoal-900 mb-6 font-display">Experience & Lifestyle</h2>
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-charcoal-700 mb-2">Dog Experience *</label>
+                            {% render_field form.dog_experience class="w-full px-4 py-3 border border-charcoal-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-500" %}
+                            {% if form.dog_experience.errors %}
+                                <ul class="mt-1 text-red-600 text-sm">
+                                    {% for error in form.dog_experience.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-charcoal-700 mb-2">Current Pets</label>
+                            {% render_field form.current_pets class="w-full px-4 py-3 border border-charcoal-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-500" rows="3" placeholder="Describe any pets you currently have" %}
+                            {% if form.current_pets.errors %}
+                                <ul class="mt-1 text-red-600 text-sm">
+                                    {% for error in form.current_pets.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <label class="block text-sm font-semibold text-charcoal-700 mb-2">Hours Alone Per Day *</label>
+                                {% render_field form.hours_alone class="w-full px-4 py-3 border border-charcoal-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-500" type="number" %}
+                                {% if form.hours_alone.errors %}
+                                    <ul class="mt-1 text-red-600 text-sm">
+                                        {% for error in form.hours_alone.errors %}
+                                            <li>{{ error }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-charcoal-700 mb-2">Family Members *</label>
+                                {% render_field form.family_members class="w-full px-4 py-3 border border-charcoal-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-500" type="number" %}
+                                {% if form.family_members.errors %}
+                                    <ul class="mt-1 text-red-600 text-sm">
+                                        {% for error in form.family_members.errors %}
+                                            <li>{{ error }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-charcoal-700 mb-2">Children Ages</label>
+                                {% render_field form.children_ages class="w-full px-4 py-3 border border-charcoal-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-500" placeholder="e.g., 5, 8, 12" %}
+                                {% if form.children_ages.errors %}
+                                    <ul class="mt-1 text-red-600 text-sm">
+                                        {% for error in form.children_ages.errors %}
+                                            <li>{{ error }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Additional Information -->
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-charcoal-900 mb-6 font-display">Additional Information</h2>
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-charcoal-700 mb-2">Why do you want to adopt? *</label>
+                            {% render_field form.reason_for_adoption class="w-full px-4 py-3 border border-charcoal-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-500" rows="4" %}
+                            {% if form.reason_for_adoption.errors %}
+                                <ul class="mt-1 text-red-600 text-sm">
+                                    {% for error in form.reason_for_adoption.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-charcoal-700 mb-2">Veterinarian Name</label>
+                            {% render_field form.veterinarian_name class="w-full px-4 py-3 border border-charcoal-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-500" placeholder="Your current vet (if any)" %}
+                            {% if form.veterinarian_name.errors %}
+                                <ul class="mt-1 text-red-600 text-sm">
+                                    {% for error in form.veterinarian_name.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-charcoal-700 mb-2">References</label>
+                            {% render_field form.references class="w-full px-4 py-3 border border-charcoal-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-500" rows="3" placeholder="Names and contact information of personal references" %}
+                            {% if form.references.errors %}
+                                <ul class="mt-1 text-red-600 text-sm">
+                                    {% for error in form.references.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="w-full bg-forest-600 hover:bg-forest-700 text-white font-bold py-4 px-6 rounded-lg transition duration-300 shadow-lg">
+                    Submit Application & Continue to Checkout
+                </button>
+            </form>
+        </div>
+        
+    </div>
+</section>
+
+{% endblock %}

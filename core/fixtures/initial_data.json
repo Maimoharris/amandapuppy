@@ -1,0 +1,17 @@
+[
+  {"model": "core.accessorycategory", "pk": 1, "fields": {"name": "Car Seats", "slug": "car-seats", "description": "", "image": null, "order": 1}},
+  {"model": "core.accessorycategory", "pk": 2, "fields": {"name": "Food Bowls", "slug": "food-bowls", "description": "", "image": null, "order": 2}},
+  {"model": "core.accessorycategory", "pk": 3, "fields": {"name": "Toys", "slug": "toys", "description": "", "image": null, "order": 3}},
+  {"model": "core.accessorycategory", "pk": 4, "fields": {"name": "Beds & Blankets", "slug": "beds-blankets", "description": "", "image": null, "order": 4}},
+  {"model": "core.accessorycategory", "pk": 5, "fields": {"name": "Leashes & Collars", "slug": "leashes-collars", "description": "", "image": null, "order": 5}},
+  {"model": "core.accessorycategory", "pk": 6, "fields": {"name": "Clothing & Apparel", "slug": "clothing-apparel", "description": "", "image": null, "order": 6}},
+  {"model": "core.accessorycategory", "pk": 7, "fields": {"name": "Grooming Supplies", "slug": "grooming-supplies", "description": "", "image": null, "order": 7}},
+  {"model": "core.accessorycategory", "pk": 8, "fields": {"name": "Training & Behavior", "slug": "training-behavior", "description": "", "image": null, "order": 8}},
+  {"model": "core.accessorycategory", "pk": 9, "fields": {"name": "Health & Wellness", "slug": "health-wellness", "description": "", "image": null, "order": 9}},
+  {"model": "core.accessorycategory", "pk": 10, "fields": {"name": "Travel & Outdoor", "slug": "travel-outdoor", "description": "", "image": null, "order": 10}},
+  {"model": "core.accessorycategory", "pk": 11, "fields": {"name": "Water & Feeding", "slug": "water-feeding", "description": "", "image": null, "order": 11}},
+  {"model": "core.accessorycategory", "pk": 12, "fields": {"name": "Crates & Carriers", "slug": "crates-carriers", "description": "", "image": null, "order": 12}},
+  {"model": "core.accessorycategory", "pk": 13, "fields": {"name": "Pet Cameras & Tech", "slug": "pet-cameras-tech", "description": "", "image": null, "order": 13}},
+  {"model": "core.accessorycategory", "pk": 14, "fields": {"name": "ID Tags & Accessories", "slug": "id-tags-accessories", "description": "", "image": null, "order": 14}},
+  {"model": "core.accessorycategory", "pk": 15, "fields": {"name": "Dental Care", "slug": "dental-care", "description": "", "image": null, "order": 15}}
+]

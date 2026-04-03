@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% load widget_tweaks %}
+
+{% block title %}Checkout - {{ site_settings.site_name }}{% endblock %}
+
+{% block content %}
+
+<section class="py-12 bg-[#f8faf8] min-h-screen">
+    <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <h1 class="text-4xl font-bold text-charcoal-900 mb-8 font-display">Checkout</h1>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Checkout Form -->
+            <div class="lg:col-span-2">
+                <form method="post" action="" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <!-- Top-level form errors -->
+                    {% if form.non_field_errors %}
+                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                            <ul class="list-disc list-inside">
+                                {% for error in form.non_field_errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Contact Information -->
+                    <div class="bg-white rounded-2xl shadow-lg p-6">
+                        <h2 class="text-2xl font-bold text-charcoal-900 mb-6 font-display">Contact Information</h2>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-charcoal-700 mb-2">Full Name *</label>
+                                {% render_field form.full_name class="w-full px-4 py-3 border border-charcoal-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-500" %}
+                                <!-- Field errors -->
+                                {% if form.full_name.errors %}
+                                    <ul class="mt-1 text-red-600 text-sm">
+                                        {% for error in form.full_name.errors %}
+                                            <li>{{ error }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-charcoal-700 mb-2">Email *</label>
+                                {% render_field form.email class="w-full px-4 py-3 border border-charcoal-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-500" %}
+                                <!-- Field errors -->
+                                {% if form.email.errors %}
+                                    <ul class="mt-1 text-red-600 text-sm">
+                                        {% for error in form.email.errors %}
+                                            <li>{{ error }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-semibold text-charcoal-700 mb-2">Phone Number *</label>
+                                {% render_field form.phone class="w-full px-4 py-3 border border-charcoal-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-500" placeholder="+12125552368" %}
+                                <!-- Field errors -->
+                                {% if form.phone.errors %}
+                                    <ul class="mt-1 text-red-600 text-sm">
+                                        {% for error in form.phone.errors %}
+                                            <li>{{ error }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Shipping Address -->
+                    <div class="bg-white rounded-2xl shadow-lg p-6">
+                        <h2 class="text-2xl font-bold text-charcoal-900 mb-6 font-display">Shipping Address</h2>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-charcoal-700 mb-2">Address *</label>
+                                {% render_field form.shipping_address class="w-full px-4 py-3 border border-charcoal-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-500" rows="3" %}
+                                <!-- Field errors -->
+                                {% if form.shipping_address.errors %}
+                                    <ul class="mt-1 text-red-600 text-sm">
+                                        {% for error in form.shipping_address.errors %}
+                                            <li>{{ error }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-charcoal-700 mb-2">City *</label>
+                                    {% render_field form.shipping_city class="w-full px-4 py-3 border border-charcoal-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-500" %}
+                                    <!-- Field errors -->
+                                    {% if form.shipping_city.errors %}
+                                        <ul class="mt-1 text-red-600 text-sm">
+                                            {% for error in form.shipping_city.errors %}
+                                                <li>{{ error }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-charcoal-700 mb-2">State/Province *</label>
+                                    {% render_field form.shipping_state class="w-full px-4 py-3 border border-charcoal-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-500" %}
+                                    <!-- Field errors -->
+                                    {% if form.shipping_state.errors %}
+                                        <ul class="mt-1 text-red-600 text-sm">
+                                            {% for error in form.shipping_state.errors %}
+                                                <li>{{ error }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-charcoal-700 mb-2">ZIP/Postal Code *</label>
+                                    {% render_field form.shipping_zip class="w-full px-4 py-3 border border-charcoal-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-500" %}
+                                    <!-- Field errors -->
+                                    {% if form.shipping_zip.errors %}
+                                        <ul class="mt-1 text-red-600 text-sm">
+                                            {% for error in form.shipping_zip.errors %}
+                                                <li>{{ error }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-charcoal-700 mb-2">Country *</label>
+                                    {% render_field form.shipping_country class="w-full px-4 py-3 border border-charcoal-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-500" %}
+                                    <!-- Field errors -->
+                                    {% if form.shipping_country.errors %}
+                                        <ul class="mt-1 text-red-600 text-sm">
+                                            {% for error in form.shipping_country.errors %}
+                                                <li>{{ error }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Additional Notes -->
+                    <div class="bg-white rounded-2xl shadow-lg p-6">
+                        <h2 class="text-2xl font-bold text-charcoal-900 mb-6 font-display">Order Notes</h2>
+                        <div>
+                            <label class="block text-sm font-semibold text-charcoal-700 mb-2">Special Instructions (Optional)</label>
+                            {% render_field form.customer_notes class="w-full px-4 py-3 border border-charcoal-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-500" rows="4" placeholder="Any special requests or delivery instructions..." %}
+                            <!-- Field errors -->
+                            {% if form.customer_notes.errors %}
+                                <ul class="mt-1 text-red-600 text-sm">
+                                    {% for error in form.customer_notes.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-forest-600 hover:bg-forest-700 text-white font-bold py-4 px-6 rounded-lg text-lg transition duration-300 shadow-lg">
+                        Place Order
+                    </button>
+                    
+                </form>
+            </div>
+            
+            <!-- Order Summary -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-2xl shadow-lg p-6 sticky top-24">
+                    <h2 class="text-2xl font-bold text-charcoal-900 mb-6 font-display">Order Summary</h2>
+                    
+                    <div class="space-y-4 mb-6">
+                        {% for item in cart_items %}
+                        <div class="flex items-start space-x-3">
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-charcoal-900">{{ item.name }}</h4>
+                                {% if item.quantity > 1 %}
+                                <p class="text-sm text-charcoal-600">Qty: {{ item.quantity }}</p>
+                                {% endif %}
+                            </div>
+                            <span class="font-semibold text-charcoal-900">${{ item.subtotal|floatformat:2 }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="border-t border-charcoal-200 pt-4 mb-4">
+                        <div class="flex justify-between text-charcoal-700 mb-2">
+                            <span>Subtotal</span>
+                            <span>${{ total|floatformat:2 }}</span>
+                        </div>
+                        <div class="flex justify-between text-charcoal-700 mb-2">
+                            <span>Shipping</span>
+                            <span class="text-green-600">Calculated after order</span>
+                        </div>
+                    </div>
+                    
+                    <div class="border-t border-charcoal-200 pt-4 mb-6">
+                        <div class="flex justify-between text-2xl font-bold">
+                            <span class="text-charcoal-900">Total</span>
+                            <span class="text-forest-600">${{ total|floatformat:2 }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                        <div class="flex items-start">
+                            <i class="fas fa-shield-alt text-green-600 mt-1 mr-3"></i>
+                            <div class="text-sm text-green-800">
+                                <strong>Secure Payment</strong>
+                                <p class="mt-1">After placing your order, you'll receive our contact information to complete the payment securely.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-center space-x-3 mb-4">
+                        {% if site_settings.show_visa %}
+                        <i class="fab fa-cc-visa text-3xl text-charcoal-400"></i>
+                        {% endif %}
+                        {% if site_settings.show_mastercard %}
+                        <i class="fab fa-cc-mastercard text-3xl text-charcoal-400"></i>
+                        {% endif %}
+                        {% if site_settings.show_paypal %}
+                        <i class="fab fa-cc-paypal text-3xl text-charcoal-400"></i>
+                        {% endif %}
+                        {% if site_settings.show_amex %}
+                        <i class="fab fa-cc-amex text-3xl text-charcoal-400"></i>
+                        {% endif %}
+                    </div>
+                    
+                    <p class="text-xs text-[#f8faf8]0 text-center">
+                        Your personal data will be used to process your order and support your experience throughout this website.
+                    </p>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</section>
+
+{% endblock %}

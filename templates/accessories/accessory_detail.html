@@ -1,0 +1,401 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}{{ accessory.name }} - {{ site_settings.site_name }}{% endblock %}
+
+{% block content %}
+
+<!-- Product Detail Section -->
+<section class="py-12 bg-[#f8faf8]">
+    <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Breadcrumb / Back Button -->
+        <a href="{% url 'accessory_list' %}" class="inline-flex items-center text-forest-600 hover:text-forest-700 font-medium mb-6 transition group">
+            <i class="fas fa-arrow-left mr-2 text-sm group-hover:-translate-x-1 transition-transform"></i> Back to Accessories
+        </a>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14">
+            
+            <!-- Image Gallery (Left Column) -->
+            <div>
+                <div class="product-card rounded-2xl mb-4" style="border-radius: 24px;">
+                    {% if images %}
+                    <img id="main-image" src="{{ images.0.image.url }}" alt="{{ accessory.name }}" class="w-full h-96 object-cover">
+                    {% else %}
+                    <div class="w-full h-96 bg-forest-50 flex items-center justify-center">
+                        <i class="fas fa-box text-forest-300 text-8xl"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Thumbnail Gallery -->
+                {% if images.count > 1 %}
+                <div class="grid grid-cols-4 gap-3">
+                    {% for image in images %}
+                    <div class="product-card rounded-xl overflow-hidden cursor-pointer hover:opacity-80 transition-all hover:shadow-soft" onclick="changeImage('{{ image.image.url }}')">
+                        <img src="{{ image.image.url }}" alt="{{ accessory.name }}" class="w-full h-20 object-cover">
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Product Details (Right Column) -->
+            <div>
+                <div class="bg-white rounded-3xl p-8 shadow-card border border-forest-50">
+                    <!-- Category & Title -->
+                    <div class="flex items-start justify-between mb-4">
+                        <div>
+                            <span class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-forest-600 bg-forest-50 px-4 py-1.5 rounded-full mb-3">
+                                <i class="fas fa-tag text-[0.6rem]"></i>
+                                {{ accessory.category.name }}
+                            </span>
+                            <h1 class="text-4xl font-display font-800 text-charcoal-900 mb-2">{{ accessory.name }}</h1>
+                            {% if accessory.brand %}
+                            <p class="text-charcoal-500 flex items-center gap-2">
+                                <i class="fas fa-certificate text-forest-400 text-xs"></i>
+                                <span class="font-medium">{{ accessory.brand }}</span>
+                            </p>
+                            {% endif %}
+                        </div>
+                        {% if user.is_authenticated %}
+                        <a href="{% url 'add_to_wishlist' 'accessory' accessory.id %}" class="icon-btn" aria-label="Add to wishlist">
+                            <i class="far fa-heart text-xl"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Rating -->
+                    {% with avg_rating=accessory.average_rating|default:0 %}
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="flex items-center gap-1">
+                            {% for i in "12345"|make_list %}
+                            <i class="fas fa-star {% if forloop.counter <= avg_rating %}text-gold-500{% else %}text-charcoal-200{% endif %} text-sm"></i>
+                            {% endfor %}
+                        </div>
+                        <span class="text-sm text-charcoal-400">({{ accessory.rating_count|default:0 }} reviews)</span>
+                    </div>
+                    {% endwith %}
+                    
+                    <!-- Price & Stock -->
+                    <div class="mb-8 pb-6 border-b border-forest-50">
+                        <div class="flex items-baseline gap-3">
+                            <span class="text-5xl font-display font-800 text-forest-600">${{ accessory.price|floatformat:2|intcomma }}</span>
+                            {% if accessory.compare_at_price %}
+                            <span class="text-charcoal-300 line-through text-lg">${{ accessory.compare_at_price|floatformat:2|intcomma }}</span>
+                            <span class="tag-chip bg-red-50 text-red-600 border-red-200 text-xs">SALE</span>
+                            {% endif %}
+                        </div>
+                        <div class="mt-4">
+                            {% if accessory.in_stock %}
+                            <span class="inline-flex items-center gap-2 bg-mint-50 text-mint-700 px-4 py-2 rounded-xl font-semibold text-sm border border-mint-200">
+                                <i class="fas fa-check-circle text-mint-500"></i> In Stock ({{ accessory.stock_quantity }} available)
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center gap-2 bg-red-50 text-red-600 px-4 py-2 rounded-xl font-semibold text-sm border border-red-200">
+                                <i class="fas fa-times-circle text-red-500"></i> Out of Stock
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Product Specifications -->
+                    <div class="space-y-4 mb-8">
+                        {% if accessory.size_options %}
+                        <div class="bg-cream-50 rounded-xl p-5 border border-forest-50">
+                            <div class="text-xs font-bold uppercase tracking-wider text-forest-600 mb-3 flex items-center gap-2">
+                                <i class="fas fa-ruler"></i> Available Sizes
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                {% with size_list=accessory.size_options|cut:" " %}
+                                {% for size in size_list.split %}
+                                <span class="bg-white border-2 border-forest-200 text-charcoal-700 px-4 py-2 rounded-lg text-sm font-semibold hover:border-forest-500 transition-colors">{{ size }}</span>
+                                {% endfor %}
+                                {% endwith %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if accessory.color_options %}
+                        <div class="bg-cream-50 rounded-xl p-5 border border-forest-50">
+                            <div class="text-xs font-bold uppercase tracking-wider text-forest-600 mb-3 flex items-center gap-2">
+                                <i class="fas fa-palette"></i> Available Colors
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                {% with color_list=accessory.color_options|cut:" " %}
+                                {% for color in color_list.split %}
+                                <span class="bg-white border-2 border-forest-200 text-charcoal-700 px-4 py-2 rounded-lg text-sm font-semibold hover:border-forest-500 transition-colors">{{ color }}</span>
+                                {% endfor %}
+                                {% endwith %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if accessory.material %}
+                        <div class="bg-cream-50 rounded-xl p-5 border border-forest-50">
+                            <div class="text-xs font-bold uppercase tracking-wider text-forest-600 mb-3 flex items-center gap-2">
+                                <i class="fas fa-cube"></i> Material
+                            </div>
+                            <div class="text-charcoal-800 font-semibold">{{ accessory.material }}</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="space-y-3">
+                        {% if accessory.in_stock %}
+                        <a href="{% url 'add_to_cart' 'accessory' accessory.id %}" class="btn-cta w-full flex items-center justify-center gap-3 py-4 text-base">
+                            <i class="fas fa-shopping-cart"></i> Add to Cart
+                        </a>
+                        {% else %}
+                        <button disabled class="w-full bg-charcoal-200 text-charcoal-500 font-bold py-4 px-6 rounded-xl text-center text-base cursor-not-allowed flex items-center justify-center gap-3">
+                            <i class="fas fa-times-circle"></i> Out of Stock
+                        </button>
+                        {% endif %}
+                        
+                        <!-- Share Buttons -->
+                        <div class="grid grid-cols-3 gap-2">
+                            <button onclick="shareOnFacebook()" class="flex items-center justify-center gap-2 bg-[#1877f2] hover:bg-[#0e5fbf] text-white font-semibold py-3 rounded-xl transition-all hover:scale-105 text-sm">
+                                <i class="fab fa-facebook-f"></i>
+                                <span class="hidden sm:inline">Share</span>
+                            </button>
+                            <button onclick="shareOnTwitter()" class="flex items-center justify-center gap-2 bg-[#1da1f2] hover:bg-[#177ac9] text-white font-semibold py-3 rounded-xl transition-all hover:scale-105 text-sm">
+                                <i class="fab fa-twitter"></i>
+                                <span class="hidden sm:inline">Tweet</span>
+                            </button>
+                            <button onclick="shareOnWhatsApp()" class="flex items-center justify-center gap-2 bg-[#25d366] hover:bg-[#1da85c] text-white font-semibold py-3 rounded-xl transition-all hover:scale-105 text-sm">
+                                <i class="fab fa-whatsapp"></i>
+                                <span class="hidden sm:inline">Send</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Description Tab -->
+        <div class="mt-12 bg-white rounded-3xl p-8 shadow-card border border-forest-50">
+            <div class="flex items-center gap-3 mb-6">
+                <span class="section-eyebrow">Details</span>
+                <h2 class="text-2xl font-display font-800 text-charcoal-900">Product Description</h2>
+            </div>
+            <div class="prose prose-lg max-w-none text-charcoal-600">
+                {{ accessory.description|safe|default:"No description available." }}
+            </div>
+        </div>
+        
+        <!-- Reviews Section -->
+        <div class="mt-12 bg-white rounded-3xl p-8 shadow-card border border-forest-50">
+            <div class="flex items-center justify-between mb-8">
+                <div class="flex items-center gap-3">
+                    <span class="section-eyebrow">Reviews</span>
+                    <h2 class="text-2xl font-display font-800 text-charcoal-900">Customer Feedback</h2>
+                </div>
+                <span class="tag-chip">
+                    <i class="fas fa-star text-gold-500"></i>
+                    {{ accessory.average_rating|default:0|floatformat:1 }} / 5
+                </span>
+            </div>
+            
+            <!-- Rating Form -->
+            {% if user.is_authenticated %}
+            <div class="bg-cream-50 rounded-xl p-6 mb-8 border border-forest-100">
+                <h3 class="text-lg font-bold text-charcoal-900 mb-4 flex items-center gap-2">
+                    <i class="fas fa-pen text-forest-500"></i>
+                    {% if user_rating %}Edit Your Review{% else %}Write a Review{% endif %}
+                </h3>
+                <form method="post" action="">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold text-charcoal-700 mb-3">Your Rating</label>
+                        <div class="flex gap-2" id="rating-stars">
+                            {% for i in "12345"|make_list %}
+                            <input type="radio" name="rating" value="{{ forloop.counter }}" id="rating-{{ forloop.counter }}" class="hidden" {% if user_rating.rating == forloop.counter %}checked{% endif %} required>
+                            <label for="rating-{{ forloop.counter }}" class="cursor-pointer text-3xl text-charcoal-200 hover:text-gold-500 transition-colors rating-star" data-rating="{{ forloop.counter }}">
+                                <i class="fas fa-star"></i>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold text-charcoal-700 mb-2">Your Review</label>
+                        <textarea name="review" rows="4" class="w-full px-4 py-3 border border-forest-200 rounded-xl focus:ring-2 focus:ring-forest-500 focus:border-transparent" placeholder="Share your experience with this product...">{% if user_rating %}{{ user_rating.review }}{% endif %}</textarea>
+                    </div>
+                    <button type="submit" class="btn-cta inline-flex items-center gap-2">
+                        <i class="fas fa-paper-plane"></i>
+                        {% if user_rating %}Update Review{% else %}Submit Review{% endif %}
+                    </button>
+                </form>
+            </div>
+            {% else %}
+            <div class="bg-cream-50 rounded-xl p-8 mb-8 text-center border border-forest-100">
+                <p class="text-charcoal-600 mb-4">Please login to leave a review</p>
+                <a href="{% url 'login' %}?next={{ request.path }}" class="btn-cta inline-flex items-center gap-2">
+                    <i class="fas fa-sign-in-alt"></i> Login to Review
+                </a>
+            </div>
+            {% endif %}
+            
+            <!-- Reviews List -->
+            {% if ratings %}
+            <div class="space-y-6">
+                {% for rating in ratings %}
+                <div class="border-b border-forest-50 pb-6 last:border-0">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-start gap-3">
+                            <div class="w-10 h-10 rounded-full bg-forest-100 text-forest-600 flex items-center justify-center font-bold text-sm flex-shrink-0">
+                                {{ rating.user.username|first|upper }}
+                            </div>
+                            <div>
+                                <div class="font-semibold text-charcoal-900">{{ rating.user.username }}</div>
+                                <div class="flex items-center gap-1 mt-1">
+                                    {% for i in "12345"|make_list %}
+                                    <i class="fas fa-star {% if forloop.counter <= rating.rating %}text-gold-500{% else %}text-charcoal-200{% endif %} text-xs"></i>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-xs text-charcoal-400">{{ rating.created_at|date:"M d, Y" }}</div>
+                    </div>
+                    {% if rating.review %}
+                    <p class="text-charcoal-600 text-sm ml-13">{{ rating.review }}</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-12">
+                <i class="fas fa-star text-4xl text-charcoal-300 mb-3"></i>
+                <p class="text-charcoal-500">No reviews yet. Be the first to share your experience!</p>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Related Accessories -->
+        {% if related_accessories %}
+        <div class="mt-16">
+            <div class="flex items-center gap-3 mb-8">
+                <span class="section-eyebrow">You may also like</span>
+                <h2 class="text-2xl font-display font-800 text-charcoal-900">Related Products</h2>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {% for related in related_accessories %}
+                <div class="product-card group">
+                    <a href="{% url 'accessory_detail' related.slug %}" class="block">
+                        {% if related.images.all %}
+                        <div class="card-img">
+                            <img src="{{ related.images.first.image.url }}" alt="{{ related.name }}" class="w-full h-48 object-cover">
+                        </div>
+                        {% else %}
+                        <div class="w-full h-48 bg-forest-50 flex items-center justify-center">
+                            <i class="fas fa-box text-forest-300 text-4xl"></i>
+                        </div>
+                        {% endif %}
+                    </a>
+                    
+                    <div class="p-4">
+                        <h3 class="font-bold text-charcoal-900 mb-2 group-hover:text-forest-600 transition-colors">
+                            <a href="{% url 'accessory_detail' related.slug %}">{{ related.name }}</a>
+                        </h3>
+                        <div class="flex items-center justify-between">
+                            <span class="price-tag text-lg">${{ related.price|floatformat:2|intcomma }}</span>
+                            {% if related.in_stock %}
+                            <a href="{% url 'add_to_cart' 'accessory' related.id %}" class="icon-btn bg-forest-50 hover:bg-forest-500 hover:text-white" title="Add to cart">
+                                <i class="fas fa-shopping-cart"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+    </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    'use strict';
+    
+    // Image Gallery
+    window.changeImage = function(imageUrl) {
+        const mainImage = document.getElementById('main-image');
+        if (mainImage) {
+            mainImage.style.opacity = '0.5';
+            mainImage.src = imageUrl;
+            setTimeout(() => mainImage.style.opacity = '1', 150);
+        }
+    };
+    
+    // Rating Stars Interaction
+    const stars = document.querySelectorAll('.rating-star');
+    const starInputs = document.querySelectorAll('input[name="rating"]');
+    
+    function highlightStars(rating) {
+        stars.forEach((star, index) => {
+            const starIcon = star.querySelector('i');
+            if (index < rating) {
+                starIcon.classList.add('text-gold-500');
+                starIcon.classList.remove('text-charcoal-200');
+            } else {
+                starIcon.classList.remove('text-gold-500');
+                starIcon.classList.add('text-charcoal-200');
+            }
+        });
+    }
+    
+    stars.forEach(star => {
+        star.addEventListener('mouseenter', function() {
+            const rating = parseInt(this.dataset.rating);
+            highlightStars(rating);
+        });
+        
+        star.addEventListener('mouseleave', function() {
+            const checkedInput = document.querySelector('input[name="rating"]:checked');
+            if (checkedInput) {
+                highlightStars(parseInt(checkedInput.value));
+            } else {
+                highlightStars(0);
+            }
+        });
+        
+        star.addEventListener('click', function() {
+            const rating = parseInt(this.dataset.rating);
+            const radio = document.getElementById(`rating-${rating}`);
+            if (radio) {
+                radio.checked = true;
+                highlightStars(rating);
+            }
+        });
+    });
+    
+    // Initialize stars if a rating is preselected
+    const checkedInput = document.querySelector('input[name="rating"]:checked');
+    if (checkedInput) {
+        highlightStars(parseInt(checkedInput.value));
+    }
+    
+    // Social Sharing
+    const shareUrl = encodeURIComponent(window.location.href);
+    const shareTitle = encodeURIComponent("{{ accessory.name|escapejs }}");
+    
+    window.shareOnFacebook = function() {
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`, 'facebook-share', 'width=600,height=400');
+    };
+    
+    window.shareOnTwitter = function() {
+        window.open(`https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareTitle}`, 'twitter-share', 'width=600,height=400');
+    };
+    
+    window.shareOnWhatsApp = function() {
+        window.open(`https://wa.me/?text=${shareTitle}%20${shareUrl}`, 'whatsapp-share', 'width=600,height=400');
+    };
+    
+})();
+</script>
+{% endblock %}

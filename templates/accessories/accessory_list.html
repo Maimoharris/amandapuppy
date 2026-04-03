@@ -1,0 +1,820 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Shop Accessories — {{ site_settings.site_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ─── Page Shell ──────────────────────────────────────────── */
+    .acc-page { background: #f8faf8; min-height: 100vh; }
+
+    /* ─── Page Banner ─────────────────────────────────────────── */
+    .page-banner {
+        background:
+            radial-gradient(ellipse at 0% 100%, rgba(11,165,233,.2) 0%, transparent 55%),
+            radial-gradient(ellipse at 100% 0%,  rgba(212,160,23,.15) 0%, transparent 55%),
+            linear-gradient(135deg, #0e4329 0%, #136641 40%, #0369a1 100%);
+        padding: 2.75rem 0 2.25rem;
+        position: relative; overflow: hidden;
+    }
+    .page-banner::after {
+        content: '';
+        position: absolute; inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23ffffff' fill-opacity='0.025'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .banner-inner { position: relative; z-index: 1; }
+    .breadcrumb { display: flex; align-items: center; gap: 7px; font-size: .78rem; color: rgba(255,255,255,.55); flex-wrap: wrap; }
+    .breadcrumb a { color: rgba(255,255,255,.65); text-decoration: none; transition: color .2s; }
+    .breadcrumb a:hover { color: white; }
+    .breadcrumb-sep { font-size: .55rem; color: rgba(255,255,255,.35); }
+    .banner-title {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 800; font-size: clamp(1.75rem, 4vw, 2.5rem);
+        color: white; letter-spacing: -0.02em; line-height: 1.15;
+    }
+    .banner-sub { color: rgba(255,255,255,.68); font-size: .9375rem; margin-top: 5px; }
+
+    /* Active filter chips in banner */
+    .filter-chip {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: rgba(255,255,255,.13);
+        border: 1px solid rgba(255,255,255,.25);
+        color: rgba(255,255,255,.9);
+        font-size: .775rem; font-weight: 600;
+        padding: 4px 12px; border-radius: 50px;
+        backdrop-filter: blur(6px); text-decoration: none; transition: background .2s;
+    }
+    .filter-chip:hover { background: rgba(255,255,255,.22); color: white; }
+    .filter-chip i { font-size: .65rem; opacity: .7; }
+
+    /* ─── Category pill strip ─────────────────────────────────── */
+    .cat-strip {
+        background: white;
+        border-bottom: 1px solid rgba(34,160,102,.06);
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .cat-strip::-webkit-scrollbar { height: 0; }
+    .cat-strip-inner { display: flex; align-items: center; gap: 6px; padding: 12px 0; white-space: nowrap; }
+    .cat-pill {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 7px 16px; border-radius: 50px;
+        font-size: .8125rem; font-weight: 600;
+        text-decoration: none; transition: all .2s; border: 1.5px solid transparent;
+        white-space: nowrap; cursor: pointer;
+    }
+    .cat-pill-default {
+        background: #f5f5f4; color: #4a5968;
+        border-color: #e7e5e4;
+    }
+    .cat-pill-default:hover { background: #f0faf4; border-color: #b3e7c9; color: #136641; }
+    .cat-pill-active {
+        background: linear-gradient(135deg, #22a066, #136641);
+        color: white; border-color: transparent;
+        box-shadow: 0 2px 10px rgba(34,160,102,.3);
+    }
+
+    /* ─── Filter Sidebar ──────────────────────────────────────── */
+    .filter-sidebar {
+        background: white; border-radius: 20px;
+        border: 1.5px solid rgba(34,160,102,.08);
+        box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 4px 16px rgba(0,0,0,.05);
+        overflow: hidden; position: sticky; top: 80px;
+    }
+    .filter-sidebar-header {
+        padding: 18px 22px 14px;
+        border-bottom: 1px solid #f0f0ee;
+        display: flex; align-items: center; justify-content: space-between;
+    }
+    .filter-sidebar-title {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 800; font-size: 1rem; color: #1e2730;
+        display: flex; align-items: center; gap: 8px;
+    }
+    .filter-sidebar-title i { color: #0284c7; font-size: .9rem; }
+    .filter-reset-link {
+        font-size: .78rem; font-weight: 600; color: #808d9a;
+        text-decoration: none; transition: color .2s;
+        display: flex; align-items: center; gap: 5px;
+    }
+    .filter-reset-link:hover { color: #ef4444; }
+
+    .filter-body { padding: 18px 22px 22px; }
+    .filter-group { margin-bottom: 20px; }
+    .filter-label {
+        display: block; font-size: .78rem; font-weight: 700;
+        color: #3c4a57; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px;
+    }
+    .filter-input, .filter-select {
+        width: 100%; padding: 9px 12px;
+        border: 1.5px solid #e7e5e4; border-radius: 11px;
+        font-size: .875rem; color: #2d3843; background: #fafaf9;
+        transition: border-color .2s, box-shadow .2s;
+        outline: none; appearance: none; -webkit-appearance: none;
+    }
+    .filter-input:focus, .filter-select:focus {
+        border-color: #0284c7; background: white;
+        box-shadow: 0 0 0 3px rgba(2,132,199,.12);
+    }
+    .filter-input::placeholder { color: #adb5be; }
+    .select-wrap { position: relative; }
+    .select-wrap::after {
+        content: '\f078'; font-family: 'Font Awesome 6 Free'; font-weight: 900;
+        font-size: .65rem; color: #808d9a;
+        position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+        pointer-events: none;
+    }
+    .range-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .range-input {
+        padding: 9px 10px; border: 1.5px solid #e7e5e4; border-radius: 11px;
+        font-size: .875rem; color: #2d3843; background: #fafaf9; width: 100%;
+        transition: border-color .2s, box-shadow .2s; outline: none;
+    }
+    .range-input:focus {
+        border-color: #0284c7; background: white;
+        box-shadow: 0 0 0 3px rgba(2,132,199,.12);
+    }
+    .range-input::placeholder { color: #adb5be; font-size: .82rem; }
+
+    /* In-stock toggle */
+    .toggle-label {
+        display: flex; align-items: center; gap: 10px;
+        background: #f8faf8; border: 1.5px solid #e7e5e4;
+        border-radius: 12px; padding: 11px 14px; cursor: pointer;
+        transition: border-color .2s, background .2s;
+    }
+    .toggle-label:has(input:checked) { background: #f0faf4; border-color: #b3e7c9; }
+    .toggle-label input { display: none; }
+    .toggle-track {
+        width: 38px; height: 22px; border-radius: 11px;
+        background: #d6d3d1; position: relative; flex-shrink: 0;
+        transition: background .2s;
+    }
+    .toggle-label:has(input:checked) .toggle-track { background: #22a066; }
+    .toggle-thumb {
+        width: 16px; height: 16px; border-radius: 50%;
+        background: white; position: absolute; top: 3px; left: 3px;
+        transition: transform .2s;
+        box-shadow: 0 1px 3px rgba(0,0,0,.2);
+    }
+    .toggle-label:has(input:checked) .toggle-thumb { transform: translateX(16px); }
+    .toggle-text { font-size: .875rem; font-weight: 600; color: #3c4a57; }
+
+    .btn-apply {
+        width: 100%; background: linear-gradient(135deg, #0ba5e9, #0369a1);
+        color: white; font-weight: 700; font-size: .875rem;
+        padding: 10px; border-radius: 12px; border: none; cursor: pointer;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        box-shadow: 0 2px 10px rgba(11,165,233,.35); transition: all .2s ease;
+    }
+    .btn-apply:hover { box-shadow: 0 4px 18px rgba(11,165,233,.5); transform: translateY(-1px); }
+    .btn-reset {
+        width: 100%; background: #f5f5f4; color: #4a5968; font-weight: 600;
+        font-size: .875rem; padding: 10px; border-radius: 12px; border: none; cursor: pointer;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        transition: background .2s; text-decoration: none; margin-top: 8px;
+    }
+    .btn-reset:hover { background: #e7e5e4; }
+
+    /* Mobile filter button */
+    .mobile-filter-btn {
+        display: flex; align-items: center; gap: 8px;
+        background: white; border: 1.5px solid rgba(2,132,199,.2);
+        color: #0369a1; font-weight: 700; font-size: .875rem;
+        padding: 9px 16px; border-radius: 12px; cursor: pointer;
+        box-shadow: 0 1px 4px rgba(0,0,0,.05); transition: all .2s;
+    }
+    .mobile-filter-btn:hover { background: #f0f9ff; }
+
+    /* ─── Results bar ─────────────────────────────────────────── */
+    .results-bar {
+        background: white; border-radius: 14px;
+        border: 1.5px solid rgba(34,160,102,.07);
+        padding: 12px 18px;
+        display: flex; flex-wrap: wrap; align-items: center;
+        justify-content: space-between; gap: 10px; margin-bottom: 20px;
+        box-shadow: 0 1px 4px rgba(0,0,0,.04);
+    }
+    .results-count { font-size: .875rem; color: #5f6e7c; font-weight: 500; }
+    .results-count strong { color: #1e2730; font-weight: 700; }
+    .sort-select-bar {
+        padding: 8px 30px 8px 10px; border: 1.5px solid #e7e5e4;
+        border-radius: 10px; font-size: .8125rem; color: #2d3843;
+        background: #fafaf9; appearance: none; -webkit-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23808d9a' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat; background-position: right 10px center;
+        cursor: pointer; outline: none; transition: border-color .2s, box-shadow .2s;
+    }
+    .sort-select-bar:focus { border-color: #0284c7; box-shadow: 0 0 0 3px rgba(2,132,199,.12); }
+    .view-toggle { display: flex; gap: 4px; }
+    .view-btn {
+        width: 34px; height: 34px; border-radius: 9px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: .8rem; color: #808d9a; background: transparent;
+        border: 1.5px solid #e7e5e4; cursor: pointer; transition: all .2s;
+    }
+    .view-btn.active, .view-btn:hover { background: #f0f9ff; border-color: #bae6fd; color: #0284c7; }
+
+    /* ─── Accessory Cards ─────────────────────────────────────── */
+    .acc-card {
+        background: white; border-radius: 20px; overflow: hidden;
+        border: 1.5px solid rgba(2,132,199,.07);
+        box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 4px 12px rgba(0,0,0,.05);
+        transition: all .3s ease; position: relative;
+    }
+    .acc-card:hover {
+        box-shadow: 0 8px 32px rgba(0,0,0,.1), 0 2px 10px rgba(2,132,199,.1);
+        transform: translateY(-5px); border-color: rgba(2,132,199,.2);
+    }
+    .acc-card-img { overflow: hidden; position: relative; background: #f0f9ff; }
+    .acc-card-img img { width: 100%; height: 220px; object-fit: cover; display: block; transition: transform .5s ease; }
+    .acc-card:hover .acc-card-img img { transform: scale(1.06); }
+
+    /* Out of stock overlay */
+    .oos-overlay {
+        position: absolute; inset: 0;
+        background: rgba(0,0,0,.35);
+        display: flex; align-items: center; justify-content: center;
+        z-index: 3;
+    }
+    .oos-tag {
+        background: rgba(239,68,68,.9); color: white;
+        font-size: .75rem; font-weight: 800; letter-spacing: .04em;
+        text-transform: uppercase; padding: 5px 14px; border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,.2);
+    }
+
+    /* Card overlay actions */
+    .card-overlay-actions {
+        position: absolute; top: 10px; right: 10px;
+        display: flex; flex-direction: column; gap: 6px;
+        opacity: 0; transform: translateX(8px);
+        transition: all .25s ease; z-index: 5;
+    }
+    .acc-card:hover .card-overlay-actions { opacity: 1; transform: translateX(0); }
+    .overlay-btn {
+        width: 34px; height: 34px; background: white; border-radius: 9px;
+        display: flex; align-items: center; justify-content: center;
+        color: #3c4a57; font-size: .78rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,.14);
+        transition: background .15s, color .15s;
+        text-decoration: none; border: none; cursor: pointer;
+    }
+    .overlay-btn:hover { background: #0284c7; color: white; }
+    .overlay-btn.heart:hover { background: #ef4444; color: white; }
+
+    /* New / sale badge */
+    .card-badge {
+        position: absolute; top: 10px; left: 10px;
+        font-size: .68rem; font-weight: 800; letter-spacing: .04em;
+        text-transform: uppercase; padding: 3px 9px; border-radius: 6px; z-index: 5;
+    }
+    .badge-new  { background: #22a066; color: white; }
+    .badge-sale { background: #d4a017; color: white; }
+
+    .acc-card-body { padding: 16px 18px 18px; }
+
+    .cat-chip {
+        display: inline-flex; align-items: center; gap: 5px;
+        background: #f0f9ff; color: #0369a1;
+        font-size: .7rem; font-weight: 700;
+        padding: 3px 9px; border-radius: 50px;
+        border: 1px solid #bae6fd; margin-bottom: 9px;
+    }
+    .acc-name {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 700; font-size: 1rem; color: #1e2730;
+        margin-bottom: 6px; line-height: 1.3;
+    }
+    .acc-name a { text-decoration: none; transition: color .2s; }
+    .acc-name a:hover { color: #0284c7; }
+    .acc-brand { font-size: .775rem; color: #808d9a; font-weight: 500; margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
+    .acc-brand i { color: #0284c7; font-size: .7rem; }
+
+    .stars { display: flex; align-items: center; gap: 2px; margin-bottom: 12px; }
+    .stars .on  { color: #d4a017; font-size: .78rem; }
+    .stars .off { color: #e7e5e4; font-size: .78rem; }
+    .stars .count { font-size: .75rem; color: #808d9a; margin-left: 5px; }
+
+    .card-footer {
+        display: flex; align-items: center; justify-content: space-between;
+        padding-top: 12px; border-top: 1px solid #f5f5f4;
+    }
+    .acc-price {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 800; font-size: 1.3rem; color: #0369a1;
+        letter-spacing: -0.01em;
+    }
+    .btn-cart {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: linear-gradient(135deg, #0ba5e9, #0369a1);
+        color: white; font-weight: 700; font-size: .8rem;
+        padding: 8px 16px; border-radius: 10px; text-decoration: none;
+        box-shadow: 0 2px 8px rgba(11,165,233,.3); transition: all .2s ease;
+    }
+    .btn-cart:hover { box-shadow: 0 4px 16px rgba(11,165,233,.5); transform: translateY(-1px); }
+    .oos-label {
+        font-size: .775rem; font-weight: 700; color: #ef4444;
+        background: #fff5f5; padding: 6px 12px;
+        border-radius: 9px; border: 1px solid #fecaca;
+    }
+
+    /* ─── List view ───────────────────────────────────────────── */
+    .acc-grid.list-view { grid-template-columns: 1fr !important; }
+    .acc-grid.list-view .acc-card { display: flex; flex-direction: row; }
+    .acc-grid.list-view .acc-card-img { width: 210px; flex-shrink: 0; }
+    .acc-grid.list-view .acc-card-img img { height: 100%; }
+    .acc-grid.list-view .acc-card-body { flex: 1; }
+    @media (max-width: 600px) {
+        .acc-grid.list-view .acc-card { flex-direction: column; }
+        .acc-grid.list-view .acc-card-img { width: 100%; }
+        .acc-grid.list-view .acc-card-img img { height: 200px; }
+    }
+
+    /* ─── Pagination ──────────────────────────────────────────── */
+    .pagination { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; justify-content: center; }
+    .page-btn {
+        min-width: 38px; height: 38px;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 10px; font-size: .875rem; font-weight: 600;
+        text-decoration: none; transition: all .2s; padding: 0 12px;
+    }
+    .page-btn-default { background: white; color: #4a5968; border: 1.5px solid #e7e5e4; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+    .page-btn-default:hover { background: #f0f9ff; border-color: #bae6fd; color: #0284c7; }
+    .page-btn-active { background: linear-gradient(135deg, #0ba5e9, #0369a1); color: white; border: none; box-shadow: 0 2px 10px rgba(11,165,233,.35); }
+    .page-btn-nav { background: white; color: #0284c7; border: 1.5px solid rgba(2,132,199,.25); }
+    .page-btn-nav:hover { background: #f0f9ff; border-color: #0284c7; }
+    .page-ellipsis { color: #adb5be; font-size: .875rem; padding: 0 4px; }
+
+    /* ─── Empty state ─────────────────────────────────────────── */
+    .empty-state {
+        background: white; border-radius: 20px;
+        border: 1.5px dashed rgba(2,132,199,.2);
+        padding: 60px 24px; text-align: center;
+    }
+    .empty-icon-wrap {
+        width: 80px; height: 80px; background: #f0f9ff;
+        border-radius: 20px; display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 20px; font-size: 2rem; color: #7cd4fd;
+    }
+
+    /* ─── Mobile filter drawer ────────────────────────────────── */
+    #mobile-filter-panel { position: fixed; inset: 0; z-index: 300; display: none; }
+    #mobile-filter-panel.open { display: block; }
+    #mobile-filter-overlay { position: absolute; inset: 0; background: rgba(0,0,0,.45); backdrop-filter: blur(3px); }
+    #mobile-filter-drawer {
+        position: absolute; left: 0; top: 0; bottom: 0;
+        width: min(360px, 92vw); background: white;
+        overflow-y: auto; box-shadow: 4px 0 30px rgba(0,0,0,.15);
+        display: flex; flex-direction: column;
+    }
+</style>
+{% endblock %}
+
+
+{% block content %}
+<div class="acc-page">
+
+    <!-- ═══ Banner ═══════════════════════════════════════════════ -->
+    <div class="page-banner">
+        <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 banner-inner">
+            <div class="breadcrumb mb-3">
+                <a href="{% url 'home' %}">Home</a>
+                <i class="fas fa-chevron-right breadcrumb-sep"></i>
+                <span style="color:rgba(255,255,255,.85);">Accessories</span>
+            </div>
+            <h1 class="banner-title">Pet Accessories</h1>
+            <p class="banner-sub">Premium products to keep your furry friends happy &amp; healthy</p>
+
+            <!-- Active filter chips -->
+            {% if request.GET.search or request.GET.category or request.GET.in_stock %}
+            <div class="flex flex-wrap gap-2 mt-4">
+                {% if request.GET.search %}
+                <span class="filter-chip">
+                    <i class="fas fa-search"></i> "{{ request.GET.search }}"
+                </span>
+                {% endif %}
+                {% if request.GET.in_stock %}
+                <span class="filter-chip">
+                    <i class="fas fa-check-circle"></i> In Stock Only
+                </span>
+                {% endif %}
+                <a href="{% url 'accessory_list' %}" class="filter-chip" style="background:rgba(239,68,68,.2);border-color:rgba(239,68,68,.4);">
+                    <i class="fas fa-times"></i> Clear all
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ═══ Category Strip ════════════════════════════════════════ -->
+    {% if categories %}
+    <div class="cat-strip">
+        <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="cat-strip-inner">
+                <a href="{% url 'accessory_list' %}"
+                   class="cat-pill {% if not request.GET.category %}cat-pill-active{% else %}cat-pill-default{% endif %}">
+                    <i class="fas fa-th" style="font-size:.72rem;"></i> All
+                </a>
+                {% for cat in categories %}
+                <a href="{% url 'accessory_category_detail' cat.slug %}"
+                   class="cat-pill {% if request.GET.category == cat.id|stringformat:'s' %}cat-pill-active{% else %}cat-pill-default{% endif %}">
+                    <i class="fas fa-tag" style="font-size:.72rem;"></i> {{ cat.name }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+
+    <!-- ═══ Main Content ══════════════════════════════════════════ -->
+    <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- Mobile bar -->
+        <div class="flex items-center justify-between gap-3 mb-5 lg:hidden">
+            <button class="mobile-filter-btn" id="open-mobile-filter">
+                <i class="fas fa-sliders-h"></i> Filters
+                {% if request.GET.category or request.GET.in_stock or request.GET.min_price or request.GET.max_price %}
+                <span style="background:#0284c7;color:white;font-size:.65rem;font-weight:800;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;">!</span>
+                {% endif %}
+            </button>
+            <select onchange="window.location.href=this.value" class="sort-select-bar">
+                <option value="{% url 'accessory_list' %}?sort=-created_at{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" {% if not request.GET.sort or request.GET.sort == '-created_at' %}selected{% endif %}>Newest First</option>
+                <option value="{% url 'accessory_list' %}?sort=price_low{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" {% if request.GET.sort == 'price_low' %}selected{% endif %}>Price: Low → High</option>
+                <option value="{% url 'accessory_list' %}?sort=price_high{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" {% if request.GET.sort == 'price_high' %}selected{% endif %}>Price: High → Low</option>
+                <option value="{% url 'accessory_list' %}?sort=name{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" {% if request.GET.sort == 'name' %}selected{% endif %}>Name A–Z</option>
+            </select>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-7">
+
+            <!-- ─── Sidebar ──────────────────────────────────────── -->
+            <aside class="hidden lg:block lg:w-[270px] shrink-0">
+                <div class="filter-sidebar">
+                    <div class="filter-sidebar-header">
+                        <div class="filter-sidebar-title">
+                            <i class="fas fa-sliders-h"></i> Filters
+                        </div>
+                        <a href="{% url 'accessory_list' %}" class="filter-reset-link">
+                            <i class="fas fa-rotate-left"></i> Reset
+                        </a>
+                    </div>
+                    <div class="filter-body">
+                        <form method="get" action="{% url 'accessory_list' %}" id="filter-form">
+
+                            <!-- Search -->
+                            <div class="filter-group">
+                                <label class="filter-label">Search</label>
+                                <div style="position:relative;">
+                                    <input type="text" name="search" value="{{ request.GET.search }}"
+                                        placeholder="Search accessories…" class="filter-input" style="padding-left:34px;">
+                                    <i class="fas fa-search" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#adb5be;font-size:.78rem;pointer-events:none;"></i>
+                                </div>
+                            </div>
+
+                            <!-- Category -->
+                            <div class="filter-group">
+                                <label class="filter-label">Category</label>
+                                <div class="select-wrap">
+                                    <select name="category" class="filter-select">
+                                        <option value="">All Categories</option>
+                                        {% for cat in categories %}
+                                        <option value="{{ cat.id }}" {% if request.GET.category == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Price Range -->
+                            <div class="filter-group">
+                                <label class="filter-label">Price Range ($)</label>
+                                <div class="range-row">
+                                    <input type="number" name="min_price" value="{{ request.GET.min_price }}" placeholder="Min" class="range-input">
+                                    <input type="number" name="max_price" value="{{ request.GET.max_price }}" placeholder="Max" class="range-input">
+                                </div>
+                            </div>
+
+                            <!-- In Stock toggle -->
+                            <div class="filter-group">
+                                <label class="filter-label">Availability</label>
+                                <label class="toggle-label">
+                                    <input type="checkbox" name="in_stock" value="1" {% if request.GET.in_stock %}checked{% endif %}>
+                                    <div class="toggle-track"><div class="toggle-thumb"></div></div>
+                                    <span class="toggle-text">In Stock Only</span>
+                                </label>
+                            </div>
+
+                            <!-- Sort -->
+                            <div class="filter-group" style="margin-bottom:24px;">
+                                <label class="filter-label">Sort By</label>
+                                <div class="select-wrap">
+                                    <select name="sort" class="filter-select">
+                                        <option value="-created_at" {% if not request.GET.sort or request.GET.sort == '-created_at' %}selected{% endif %}>Newest First</option>
+                                        <option value="price_low"   {% if request.GET.sort == 'price_low'   %}selected{% endif %}>Price: Low → High</option>
+                                        <option value="price_high"  {% if request.GET.sort == 'price_high'  %}selected{% endif %}>Price: High → Low</option>
+                                        <option value="name"        {% if request.GET.sort == 'name'        %}selected{% endif %}>Name A–Z</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn-apply">
+                                <i class="fas fa-check"></i> Apply Filters
+                            </button>
+                            <a href="{% url 'accessory_list' %}" class="btn-reset">
+                                <i class="fas fa-rotate-left"></i> Reset All
+                            </a>
+                        </form>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- ─── Results ──────────────────────────────────────── -->
+            <div class="flex-1 min-w-0">
+
+                {% if accessories %}
+                <!-- Results bar -->
+                <div class="results-bar">
+                    <p class="results-count">
+                        Showing <strong>{{ accessories.start_index }}–{{ accessories.end_index }}</strong> of
+                        <strong>{{ accessories.paginator.count }}</strong> products
+                    </p>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <select id="sort-select" class="sort-select-bar hidden lg:block">
+                            <option value="-created_at" {% if not request.GET.sort or request.GET.sort == '-created_at' %}selected{% endif %}>Newest First</option>
+                            <option value="price_low"   {% if request.GET.sort == 'price_low'   %}selected{% endif %}>Price: Low → High</option>
+                            <option value="price_high"  {% if request.GET.sort == 'price_high'  %}selected{% endif %}>Price: High → Low</option>
+                            <option value="name"        {% if request.GET.sort == 'name'        %}selected{% endif %}>Name A–Z</option>
+                        </select>
+                        <div class="view-toggle">
+                            <button class="view-btn active" id="grid-view-btn" title="Grid view"><i class="fas fa-th"></i></button>
+                            <button class="view-btn" id="list-view-btn" title="List view"><i class="fas fa-list"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Accessories grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 acc-grid" id="acc-grid">
+                    {% for accessory in accessories %}
+                    <div class="acc-card">
+
+                        <div class="acc-card-img">
+                            <a href="{% url 'accessory_detail' accessory.slug %}">
+                                {% if accessory.images.all %}
+                                <img src="{{ accessory.images.first.image.url }}" alt="{{ accessory.name }}">
+                                {% else %}
+                                <div style="height:220px;display:flex;align-items:center;justify-content:center;background:#f0f9ff;">
+                                    <i class="fas fa-box" style="font-size:3.5rem;color:#bae6fd;"></i>
+                                </div>
+                                {% endif %}
+
+                                {% if not accessory.in_stock %}
+                                <div class="oos-overlay"><span class="oos-tag">Out of Stock</span></div>
+                                {% endif %}
+                            </a>
+
+                            <!-- Quick actions -->
+                            <div class="card-overlay-actions">
+                                {% if user.is_authenticated %}
+                                <a href="{% url 'add_to_wishlist' 'accessory' accessory.id %}" class="overlay-btn heart" title="Save to Wishlist">
+                                    <i class="far fa-heart"></i>
+                                </a>
+                                {% endif %}
+                                <a href="{% url 'accessory_detail' accessory.slug %}" class="overlay-btn" title="View Details">
+                                    <i class="far fa-eye"></i>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="acc-card-body">
+                            <div class="cat-chip">
+                                <i class="fas fa-tag" style="font-size:.58rem;"></i>
+                                {{ accessory.category.name }}
+                            </div>
+
+                            <h3 class="acc-name">
+                                <a href="{% url 'accessory_detail' accessory.slug %}">{{ accessory.name }}</a>
+                            </h3>
+
+                            {% if accessory.brand %}
+                            <div class="acc-brand">
+                                <i class="fas fa-certificate"></i> {{ accessory.brand }}
+                            </div>
+                            {% endif %}
+
+                            <div class="stars">
+                                {% with avg=accessory.average_rating %}
+                                {% for i in "12345" %}
+                                <i class="fas fa-star {% if forloop.counter <= avg %}on{% else %}off{% endif %}"></i>
+                                {% endfor %}
+                                {% endwith %}
+                                <span class="count">({{ accessory.rating_count }})</span>
+                            </div>
+
+                            <div class="card-footer">
+                                <div class="acc-price">${{ accessory.price|floatformat:2 }}</div>
+                                {% if accessory.in_stock %}
+                                <a href="{% url 'add_to_cart' 'accessory' accessory.id %}" class="btn-cart">
+                                    <i class="fas fa-cart-plus" style="font-size:.72rem;"></i> Add
+                                </a>
+                                {% else %}
+                                <span class="oos-label">Out of Stock</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+
+                <!-- Pagination -->
+                {% if accessories.has_other_pages %}
+                <div class="mt-12 flex justify-center">
+                    <nav class="pagination" aria-label="Pagination">
+                        {% if accessories.has_previous %}
+                        <a href="?page={{ accessories.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.in_stock %}&in_stock=1{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}"
+                            class="page-btn page-btn-nav">
+                            <i class="fas fa-chevron-left" style="font-size:.7rem;"></i>
+                        </a>
+                        {% endif %}
+
+                        {% for num in accessories.paginator.page_range %}
+                            {% if accessories.number == num %}
+                            <span class="page-btn page-btn-active">{{ num }}</span>
+                            {% elif num > accessories.number|add:'-3' and num < accessories.number|add:'3' %}
+                            <a href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.in_stock %}&in_stock=1{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}"
+                                class="page-btn page-btn-default">{{ num }}</a>
+                            {% elif num == 1 or num == accessories.paginator.num_pages %}
+                            <a href="?page={{ num }}" class="page-btn page-btn-default">{{ num }}</a>
+                            {% elif num == accessories.number|add:'-3' or num == accessories.number|add:'3' %}
+                            <span class="page-ellipsis">…</span>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if accessories.has_next %}
+                        <a href="?page={{ accessories.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.in_stock %}&in_stock=1{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}"
+                            class="page-btn page-btn-nav">
+                            <i class="fas fa-chevron-right" style="font-size:.7rem;"></i>
+                        </a>
+                        {% endif %}
+                    </nav>
+                </div>
+                {% endif %}
+
+
+                {% else %}
+                <!-- Empty state -->
+                <div class="empty-state">
+                    <div class="empty-icon-wrap"><i class="fas fa-box-open"></i></div>
+                    <h3 style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1.35rem;color:#1e2730;margin-bottom:8px;">No accessories found</h3>
+                    <p style="color:#5f6e7c;font-size:.9375rem;max-width:380px;margin:0 auto 24px;line-height:1.6;">
+                        Try adjusting your filters or search terms to find what you're looking for.
+                    </p>
+                    <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;">
+                        <a href="{% url 'accessory_list' %}" class="btn-cart" style="font-size:.875rem;padding:10px 22px;">
+                            <i class="fas fa-rotate-left" style="font-size:.78rem;"></i> Clear Filters
+                        </a>
+                        <a href="{% url 'contact_us' %}" style="display:inline-flex;align-items:center;gap:7px;background:white;border:1.5px solid rgba(2,132,199,.25);color:#0284c7;font-weight:700;font-size:.875rem;padding:10px 22px;border-radius:11px;text-decoration:none;transition:all .2s;">
+                            <i class="fas fa-headset" style="font-size:.78rem;"></i> Contact Us
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+
+            </div><!-- /results -->
+        </div><!-- /flex -->
+    </div><!-- /container -->
+
+
+    <!-- ═══ Mobile Filter Drawer ══════════════════════════════════ -->
+    <div id="mobile-filter-panel">
+        <div id="mobile-filter-overlay"></div>
+        <div id="mobile-filter-drawer">
+            <div style="padding:16px 20px 12px;border-bottom:1px solid #f0f0ee;display:flex;align-items:center;justify-content:space-between;background:white;position:sticky;top:0;z-index:1;">
+                <div style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1rem;color:#1e2730;display:flex;align-items:center;gap:8px;">
+                    <i class="fas fa-sliders-h" style="color:#0284c7;"></i> Filters
+                </div>
+                <button id="close-mobile-filter" style="width:34px;height:34px;border-radius:9px;background:#f5f5f4;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#4a5968;font-size:.82rem;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div style="padding:18px 20px 100px;overflow-y:auto;flex:1;">
+                <form method="get" action="{% url 'accessory_list' %}">
+                    <div class="filter-group">
+                        <label class="filter-label">Search</label>
+                        <div style="position:relative;">
+                            <input type="text" name="search" value="{{ request.GET.search }}" placeholder="Search accessories…" class="filter-input" style="padding-left:34px;">
+                            <i class="fas fa-search" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#adb5be;font-size:.78rem;pointer-events:none;"></i>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Category</label>
+                        <div class="select-wrap">
+                            <select name="category" class="filter-select">
+                                <option value="">All Categories</option>
+                                {% for cat in categories %}
+                                <option value="{{ cat.id }}" {% if request.GET.category == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Price Range ($)</label>
+                        <div class="range-row">
+                            <input type="number" name="min_price" value="{{ request.GET.min_price }}" placeholder="Min" class="range-input">
+                            <input type="number" name="max_price" value="{{ request.GET.max_price }}" placeholder="Max" class="range-input">
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Availability</label>
+                        <label class="toggle-label">
+                            <input type="checkbox" name="in_stock" value="1" {% if request.GET.in_stock %}checked{% endif %}>
+                            <div class="toggle-track"><div class="toggle-thumb"></div></div>
+                            <span class="toggle-text">In Stock Only</span>
+                        </label>
+                    </div>
+                    <div class="filter-group" style="margin-bottom:24px;">
+                        <label class="filter-label">Sort By</label>
+                        <div class="select-wrap">
+                            <select name="sort" class="filter-select">
+                                <option value="-created_at" {% if not request.GET.sort or request.GET.sort == '-created_at' %}selected{% endif %}>Newest First</option>
+                                <option value="price_low"   {% if request.GET.sort == 'price_low' %}selected{% endif %}>Price: Low → High</option>
+                                <option value="price_high"  {% if request.GET.sort == 'price_high' %}selected{% endif %}>Price: High → Low</option>
+                                <option value="name"        {% if request.GET.sort == 'name' %}selected{% endif %}>Name A–Z</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-apply">
+                        <i class="fas fa-check"></i> Apply Filters
+                    </button>
+                    <a href="{% url 'accessory_list' %}" class="btn-reset">
+                        <i class="fas fa-rotate-left"></i> Reset All
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /acc-page -->
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+(function() {
+    'use strict';
+
+    // ── Mobile filter drawer ──────────────────────────────────
+    const openBtn  = document.getElementById('open-mobile-filter');
+    const closeBtn = document.getElementById('close-mobile-filter');
+    const panel    = document.getElementById('mobile-filter-panel');
+    const overlay  = document.getElementById('mobile-filter-overlay');
+
+    const openFilter  = () => { panel.classList.add('open'); document.body.style.overflow = 'hidden'; };
+    const closeFilter = () => { panel.classList.remove('open'); document.body.style.overflow = ''; };
+
+    openBtn?.addEventListener('click', openFilter);
+    closeBtn?.addEventListener('click', closeFilter);
+    overlay?.addEventListener('click', closeFilter);
+
+    // ── Sort select (desktop) ─────────────────────────────────
+    const sortSel = document.getElementById('sort-select');
+    if (sortSel) {
+        sortSel.addEventListener('change', function() {
+            const url = new URL(window.location.href);
+            url.searchParams.set('sort', this.value);
+            url.searchParams.delete('page');
+            window.location.href = url.toString();
+        });
+    }
+
+    // ── Grid / List toggle ────────────────────────────────────
+    const gridBtn = document.getElementById('grid-view-btn');
+    const listBtn = document.getElementById('list-view-btn');
+    const grid    = document.getElementById('acc-grid');
+
+    const savedView = localStorage.getItem('accListView') || 'grid';
+    if (savedView === 'list' && grid) applyList();
+
+    function applyGrid() {
+        grid?.classList.remove('list-view');
+        gridBtn?.classList.add('active'); listBtn?.classList.remove('active');
+        localStorage.setItem('accListView', 'grid');
+    }
+    function applyList() {
+        grid?.classList.add('list-view');
+        listBtn?.classList.add('active'); gridBtn?.classList.remove('active');
+        localStorage.setItem('accListView', 'list');
+    }
+
+    gridBtn?.addEventListener('click', applyGrid);
+    listBtn?.addEventListener('click', applyList);
+
+    // ── Auto-submit sidebar selects ───────────────────────────
+    document.querySelectorAll('#filter-form select').forEach(sel => {
+        sel.addEventListener('change', () => sel.closest('form').submit());
+    });
+
+})();
+</script>
+{% endblock %}

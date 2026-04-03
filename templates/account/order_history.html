@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}My Orders - {{ site_settings.site_name }}{% endblock %}
+
+{% block content %}
+
+<section class="py-12 bg-[#f8faf8] min-h-screen">
+    <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <h1 class="text-4xl font-bold text-charcoal-900 mb-8 font-display">My Orders</h1>
+        
+        {% if orders %}
+        <div class="space-y-6">
+            {% for order in orders %}
+            <div class="bg-white rounded-2xl shadow-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-xl font-bold text-charcoal-900">Order #{{ order.order_number }}</h3>
+                        <p class="text-charcoal-600">{{ order.created_at|date:"F d, Y" }}</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="inline-block px-4 py-2 rounded-lg font-semibold 
+                            {% if order.status == 'delivered' %}bg-green-100 text-green-800
+                            {% elif order.status == 'shipped' %}bg-blue-100 text-blue-800
+                            {% elif order.status == 'cancelled' %}bg-red-100 text-red-800
+                            {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                            {{ order.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="border-t border-charcoal-200 pt-4 mb-4">
+                    {% for item in order.items.all %}
+                    <div class="flex items-center justify-between py-2">
+                        <div>
+                            {% if item.dog %}
+                            {{ item.dog.name }} - {{ item.dog.breed_category.name }}
+                            {% else %}
+                            {{ item.accessory.name }} x{{ item.quantity }}
+                            {% endif %}
+                        </div>
+                        <div class="font-semibold">${{ item.subtotal|floatformat:2 }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="flex items-center justify-between border-t border-charcoal-200 pt-4">
+                    <span class="text-2xl font-bold text-charcoal-900">Total: ${{ order.total_amount|floatformat:2 }}</span>
+                    <a href="{% url 'order_detail' order.order_number %}" class="bg-forest-600 hover:bg-forest-700 text-white font-semibold py-2 px-6 rounded-lg transition">
+                        View Details
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="bg-white rounded-2xl shadow-lg p-12 text-center">
+            <i class="fas fa-shopping-bag text-6xl text-charcoal-300 mb-6"></i>
+            <h2 class="text-3xl font-bold text-charcoal-900 mb-4">No Orders Yet</h2>
+            <p class="text-charcoal-600 mb-8">Start shopping to see your orders here</p>
+            <a href="{% url 'dog_list' %}" class="bg-forest-600 hover:bg-forest-700 text-white font-bold py-3 px-8 rounded-lg transition">
+                Start Shopping
+            </a>
+        </div>
+        {% endif %}
+        
+    </div>
+</section>
+
+{% endblock %}

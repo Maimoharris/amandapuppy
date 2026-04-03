@@ -1,0 +1,1026 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}{{ site_settings.site_name }} — {{ site_settings.site_tagline }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ─── Hero ─────────────────────────────────────────────────── */
+    .hero-section {
+        position: relative;
+        min-height: 100vh;
+        max-height: 760px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+    }
+
+    .hero-video-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+            135deg,
+            rgba(8,43,26,.82) 0%,
+            rgba(19,102,65,.65) 50%,
+            rgba(34,160,102,.35) 100%
+        );
+        z-index: 1;
+    }
+
+    /* Mesh pattern overlay */
+    .hero-pattern {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        background-image:
+            radial-gradient(circle at 20% 80%, rgba(69,187,130,.18) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(212,160,23,.12) 0%, transparent 50%),
+            url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.025'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    .hero-content { position: relative; z-index: 3; }
+
+    .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255,255,255,.12);
+        border: 1px solid rgba(255,255,255,.25);
+        backdrop-filter: blur(8px);
+        color: white;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        padding: 6px 16px;
+        border-radius: 50px;
+        margin-bottom: 1.25rem;
+        letter-spacing: .02em;
+    }
+    .hero-badge-dot { width: 7px; height: 7px; border-radius: 50%; background: #45bb82; animation: pulse 2s ease-in-out infinite; }
+
+    .hero-title {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 800;
+        font-size: clamp(2.4rem, 6vw, 4.25rem);
+        line-height: 1.08;
+        letter-spacing: -0.02em;
+        color: white;
+    }
+    .hero-title .highlight {
+        background: linear-gradient(135deg, #6fe2b2, #facc15);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .hero-sub {
+        color: rgba(255,255,255,.78);
+        font-size: clamp(1rem, 2vw, 1.2rem);
+        max-width: 560px;
+        line-height: 1.6;
+    }
+
+    .hero-btn-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        background: white;
+        color: #136641;
+        font-weight: 700;
+        font-size: 0.9375rem;
+        padding: 0.875rem 1.875rem;
+        border-radius: 14px;
+        transition: all .25s ease;
+        box-shadow: 0 4px 20px rgba(0,0,0,.2);
+    }
+    .hero-btn-primary:hover {
+        background: #f0faf4;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px rgba(0,0,0,.25);
+    }
+
+    .hero-btn-secondary {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        background: rgba(255,255,255,.12);
+        border: 2px solid rgba(255,255,255,.45);
+        color: white;
+        font-weight: 700;
+        font-size: 0.9375rem;
+        padding: 0.875rem 1.875rem;
+        border-radius: 14px;
+        backdrop-filter: blur(6px);
+        transition: all .25s ease;
+    }
+    .hero-btn-secondary:hover {
+        background: rgba(255,255,255,.22);
+        border-color: rgba(255,255,255,.7);
+        transform: translateY(-2px);
+    }
+
+    /* Hero stats row */
+    .hero-stat {
+        text-align: center;
+        padding: 0 20px;
+        border-right: 1px solid rgba(255,255,255,.18);
+    }
+    .hero-stat:last-child { border-right: none; }
+    .hero-stat-num {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 800;
+        font-size: 1.6rem;
+        color: white;
+        line-height: 1;
+    }
+    .hero-stat-label { font-size: 0.775rem; color: rgba(255,255,255,.6); font-weight: 500; margin-top: 3px; }
+
+    /* Scroll hint */
+    .scroll-hint {
+        position: absolute;
+        bottom: 30px; left: 50%;
+        transform: translateX(-50%);
+        z-index: 3;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        color: rgba(255,255,255,.5);
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        animation: float 2.5s ease-in-out infinite;
+    }
+    .scroll-hint i { font-size: 1.1rem; }
+
+    /* ─── Breeds Carousel / Grid ───────────────────────────────── */
+    .breed-card {
+        background: white;
+        border-radius: 18px;
+        overflow: hidden;
+        border: 1.5px solid rgba(34,160,102,.08);
+        box-shadow: 0 1px 4px rgba(0,0,0,.04);
+        transition: all .3s ease;
+        text-decoration: none;
+        display: block;
+    }
+    .breed-card:hover {
+        border-color: rgba(34,160,102,.3);
+        box-shadow: 0 6px 24px rgba(34,160,102,.14);
+        transform: translateY(-4px);
+    }
+    .breed-card img { transition: transform .5s ease; }
+    .breed-card:hover img { transform: scale(1.08); }
+    .breed-card-name {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 700;
+        font-size: 0.875rem;
+        color: #2d3843;
+        transition: color .2s;
+    }
+    .breed-card:hover .breed-card-name { color: #136641; }
+
+    /* ─── Dog / Product Cards ──────────────────────────────────── */
+    .listing-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        border: 1.5px solid rgba(34,160,102,.07);
+        box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 4px 12px rgba(0,0,0,.05);
+        transition: all .3s ease;
+        position: relative;
+    }
+    .listing-card:hover {
+        box-shadow: 0 8px 32px rgba(0,0,0,.1), 0 2px 10px rgba(34,160,102,.1);
+        transform: translateY(-5px);
+        border-color: rgba(34,160,102,.2);
+    }
+
+    .listing-card-img {
+        overflow: hidden;
+        position: relative;
+        background: #f0faf4;
+    }
+    .listing-card-img img { transition: transform .5s ease; width: 100%; height: 220px; object-fit: cover; }
+    .listing-card:hover .listing-card-img img { transform: scale(1.06); }
+
+    /* Quick actions overlay on cards */
+    .card-quick-actions {
+        position: absolute;
+        bottom: 12px; right: 12px;
+        display: flex; flex-direction: column; gap: 7px;
+        opacity: 0;
+        transform: translateX(8px);
+        transition: all .25s ease;
+        z-index: 5;
+    }
+    .listing-card:hover .card-quick-actions {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    .quick-action-btn {
+        width: 36px; height: 36px;
+        background: white;
+        border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        color: #3c4a57;
+        font-size: 0.8rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,.14);
+        transition: background .15s, color .15s;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+    }
+    .quick-action-btn:hover { background: #22a066; color: white; }
+    .quick-action-btn.wishlist:hover { background: #ef4444; color: white; }
+
+    /* Listing card body */
+    .listing-body { padding: 18px 20px 20px; }
+
+    .listing-breed-chip {
+        display: inline-flex; align-items: center; gap: 5px;
+        background: #f0faf4;
+        color: #136641;
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 3px 9px;
+        border-radius: 50px;
+        border: 1px solid #b3e7c9;
+        margin-bottom: 10px;
+    }
+
+    .listing-title {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 700;
+        font-size: 1.05rem;
+        color: #1e2730;
+        margin-bottom: 10px;
+        line-height: 1.3;
+    }
+    .listing-title a:hover { color: #136641; }
+
+    .listing-meta { display: flex; flex-wrap: wrap; gap: 12px; font-size: 0.78rem; color: #5f6e7c; margin-bottom: 12px; }
+    .listing-meta span { display: flex; align-items: center; gap: 5px; }
+    .listing-meta i { color: #22a066; font-size: 0.75rem; }
+
+    .star-row { display: flex; align-items: center; gap: 2px; margin-bottom: 14px; }
+    .star-row .star-filled { color: #d4a017; }
+    .star-row .star-empty { color: #d6d3d1; }
+    .star-row .star-count { font-size: 0.78rem; color: #808d9a; margin-left: 5px; }
+
+    .listing-footer { display: flex; align-items: center; justify-content: space-between; }
+    .listing-price {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 800;
+        font-size: 1.35rem;
+        color: #136641;
+        letter-spacing: -0.01em;
+    }
+
+    .btn-adopt {
+        display: inline-flex; align-items: center; gap: 7px;
+        background: linear-gradient(135deg, #22a066, #136641);
+        color: white;
+        font-weight: 700;
+        font-size: 0.8125rem;
+        padding: 0.5rem 1.125rem;
+        border-radius: 11px;
+        transition: all .2s ease;
+        box-shadow: 0 2px 8px rgba(34,160,102,.35);
+        text-decoration: none;
+    }
+    .btn-adopt:hover {
+        box-shadow: 0 4px 16px rgba(34,160,102,.5);
+        transform: translateY(-1px);
+    }
+
+    .btn-cart {
+        display: inline-flex; align-items: center; gap: 7px;
+        background: linear-gradient(135deg, #0ba5e9, #0369a1);
+        color: white;
+        font-weight: 700;
+        font-size: 0.8125rem;
+        padding: 0.5rem 1.125rem;
+        border-radius: 11px;
+        transition: all .2s ease;
+        box-shadow: 0 2px 8px rgba(11,165,233,.3);
+        text-decoration: none;
+    }
+    .btn-cart:hover {
+        box-shadow: 0 4px 16px rgba(11,165,233,.45);
+        transform: translateY(-1px);
+    }
+
+    /* ─── Process / How it works ──────────────────────────────── */
+    .process-connector {
+        position: absolute;
+        top: 36px;
+        left: calc(50% + 56px);
+        width: calc(100% - 112px);
+        height: 2px;
+        background: linear-gradient(90deg, #d9f3e4, #b3e7c9);
+        z-index: 0;
+    }
+    @media (max-width: 767px) { .process-connector { display: none; } }
+
+    .process-step {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+    }
+    .process-icon-wrap {
+        width: 72px; height: 72px;
+        border-radius: 20px;
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 18px;
+        font-size: 1.5rem;
+        position: relative;
+        box-shadow: 0 4px 16px rgba(0,0,0,.08);
+        transition: transform .3s ease, box-shadow .3s ease;
+    }
+    .process-step:hover .process-icon-wrap {
+        transform: scale(1.08) translateY(-3px);
+        box-shadow: 0 8px 24px rgba(0,0,0,.12);
+    }
+    .process-step-num {
+        position: absolute;
+        top: -6px; right: -6px;
+        width: 22px; height: 22px;
+        background: white;
+        border: 2px solid #b3e7c9;
+        color: #136641;
+        font-size: 0.7rem;
+        font-weight: 800;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    /* ─── Testimonials ────────────────────────────────────────── */
+    .testimonial-card {
+        background: white;
+        border-radius: 20px;
+        padding: 28px 26px;
+        border: 1.5px solid rgba(34,160,102,.07);
+        box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 4px 16px rgba(0,0,0,.05);
+        position: relative;
+        overflow: hidden;
+        transition: all .3s ease;
+    }
+    .testimonial-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #22a066, #45bb82, #6fe2b2);
+    }
+    .testimonial-card:hover {
+        box-shadow: 0 8px 32px rgba(34,160,102,.12);
+        transform: translateY(-4px);
+    }
+    .testimonial-quote-icon {
+        position: absolute;
+        top: 16px; right: 18px;
+        font-size: 3rem;
+        color: #f0faf4;
+        line-height: 1;
+    }
+    .testimonial-stars { display: flex; gap: 3px; margin-bottom: 14px; }
+    .testimonial-stars .fa-star { font-size: 0.875rem; color: #d4a017; }
+    .testimonial-stars .fa-star.empty { color: #e7e5e4; }
+    .testimonial-text {
+        color: #4a5968;
+        font-size: 0.9375rem;
+        line-height: 1.7;
+        font-style: italic;
+        margin-bottom: 20px;
+        position: relative;
+    }
+    .testimonial-avatar-ring {
+        width: 48px; height: 48px;
+        border-radius: 50%;
+        border: 2.5px solid #b3e7c9;
+        overflow: hidden;
+        flex-shrink: 0;
+        background: #f0faf4;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .testimonial-name { font-weight: 700; font-size: 0.9rem; color: #1e2730; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .testimonial-meta { font-size: 0.78rem; color: #808d9a; margin-top: 2px; }
+
+    /* Stats counter cards */
+    .stat-counter-card {
+        background: white;
+        border-radius: 18px;
+        padding: 24px 20px;
+        border: 1.5px solid rgba(34,160,102,.08);
+        box-shadow: 0 1px 3px rgba(0,0,0,.04);
+        text-align: center;
+        transition: all .3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    .stat-counter-card::after {
+        content: '';
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        height: 3px;
+        border-radius: 0 0 18px 18px;
+    }
+    .stat-counter-card:nth-child(1)::after { background: linear-gradient(90deg, #22a066, #45bb82); }
+    .stat-counter-card:nth-child(2)::after { background: linear-gradient(90deg, #d4a017, #facc15); }
+    .stat-counter-card:nth-child(3)::after { background: linear-gradient(90deg, #0ba5e9, #36bffa); }
+    .stat-counter-card:nth-child(4)::after { background: linear-gradient(90deg, #7c3aed, #a78bfa); }
+    .stat-counter-card:hover {
+        box-shadow: 0 8px 30px rgba(0,0,0,.08);
+        transform: translateY(-3px);
+    }
+    .stat-num {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 800;
+        font-size: 2.1rem;
+        letter-spacing: -0.02em;
+        line-height: 1;
+        margin-bottom: 5px;
+    }
+    .stat-label { font-size: 0.82rem; color: #808d9a; font-weight: 500; }
+
+    /* ─── CTA Section ─────────────────────────────────────────── */
+    .cta-section {
+        background:
+            radial-gradient(ellipse at 0% 50%, rgba(69,187,130,.25) 0%, transparent 60%),
+            radial-gradient(ellipse at 100% 50%, rgba(212,160,23,.15) 0%, transparent 60%),
+            linear-gradient(135deg, #0e4329 0%, #136641 50%, #178050 100%);
+        border-radius: 28px;
+        overflow: hidden;
+        position: relative;
+    }
+    .cta-pattern {
+        position: absolute; inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M40 0L80 40L40 80L0 40z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    /* Partners */
+    .partner-logo-wrap {
+        background: white;
+        border-radius: 14px;
+        padding: 16px 24px;
+        display: flex; align-items: center; justify-content: center;
+        border: 1.5px solid rgba(34,160,102,.07);
+        box-shadow: 0 1px 4px rgba(0,0,0,.04);
+        transition: all .3s ease;
+    }
+    .partner-logo-wrap:hover {
+        box-shadow: 0 4px 16px rgba(34,160,102,.12);
+        border-color: rgba(34,160,102,.2);
+        transform: translateY(-2px);
+    }
+    .partner-logo-wrap img { height: 44px; object-fit: contain; filter: grayscale(1); opacity: .65; transition: filter .3s, opacity .3s; }
+    .partner-logo-wrap:hover img { filter: grayscale(0); opacity: 1; }
+
+    /* ─── Section Layout Helpers ──────────────────────────────── */
+    .section-header { text-align: center; margin-bottom: 3.5rem; }
+    .section-view-all {
+        display: inline-flex; align-items: center; gap: 7px;
+        color: #136641;
+        font-weight: 700;
+        font-size: 0.875rem;
+        border: 2px solid #b3e7c9;
+        padding: 0.5rem 1.25rem;
+        border-radius: 11px;
+        background: white;
+        transition: all .2s ease;
+        text-decoration: none;
+    }
+    .section-view-all:hover {
+        background: #f0faf4;
+        border-color: #22a066;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 10px rgba(34,160,102,.15);
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateX(-50%) translateY(0); }
+        50%       { transform: translateX(-50%) translateY(-8px); }
+    }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ═══════════════════════════════════════════════════════════════
+     HERO
+════════════════════════════════════════════════════════════════ -->
+<section class="hero-section">
+    {% if hero_videos %}
+    <video autoplay muted loop playsinline class="absolute inset-0 w-full h-full object-cover">
+        <source src="{{ hero_videos.0.video_file.url }}" type="video/mp4">
+    </video>
+    {% else %}
+    <div class="absolute inset-0" style="background: linear-gradient(135deg, #0e4329 0%, #136641 45%, #22a066 80%, #45bb82 100%);"></div>
+    {% endif %}
+
+    <div class="hero-video-overlay"></div>
+    <div class="hero-pattern"></div>
+
+    <div class="hero-content w-full">
+        <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-2xl">
+
+                <div class="hero-badge">
+                    <span class="hero-badge-dot"></span>
+                    Trusted by 2,000+ happy pet families
+                </div>
+
+                <h1 class="hero-title mb-5">
+                    Find Your<br>
+                    <span class="highlight">Perfect</span><br>
+                    Companion
+                </h1>
+
+                <p class="hero-sub mb-8">
+                    Discover adorable, health-guaranteed puppies and premium pet accessories from trusted breeders across the country.
+                </p>
+
+                <div class="flex flex-wrap gap-3 mb-12">
+                    <a href="{% url 'dog_list' %}" class="hero-btn-primary">
+                        <i class="fas fa-paw"></i> Browse Puppies
+                    </a>
+                    <a href="{% url 'accessory_list' %}" class="hero-btn-secondary">
+                        <i class="fas fa-shopping-bag"></i> Shop Accessories
+                    </a>
+                </div>
+
+                <!-- Mini stats row -->
+                <div class="flex items-center divide-x divide-white/20">
+                    <div class="hero-stat pl-0">
+                        <div class="hero-stat-num">500+</div>
+                        <div class="hero-stat-label">Happy families</div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="hero-stat-num">4.9★</div>
+                        <div class="hero-stat-label">Avg rating</div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="hero-stat-num">100%</div>
+                        <div class="hero-stat-label">Health guaranteed</div>
+                    </div>
+                    <div class="hero-stat hidden sm:block">
+                        <div class="hero-stat-num">5yr</div>
+                        <div class="hero-stat-label">In business</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scroll cue -->
+    <div class="scroll-hint">
+        <span>Scroll</span>
+        <i class="fas fa-chevron-down"></i>
+    </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     POPULAR BREEDS
+════════════════════════════════════════════════════════════════ -->
+{% if featured_breeds %}
+<section class="py-20 bg-[#f8faf8]">
+    <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+
+        <div class="section-header">
+            <div class="section-eyebrow">Top Breeds</div>
+            <h2 class="section-title">Popular Breeds</h2>
+            <p class="section-subtitle mx-auto mt-3">Explore our most loved and sought-after dog breeds</p>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 lg:gap-5">
+            {% for breed in featured_breeds %}
+            <a href="{% url 'breed_category_detail' breed.slug %}" class="breed-card group">
+                <div class="overflow-hidden" style="border-radius: 18px 18px 0 0;">
+                    {% if breed.image %}
+                    <img src="{{ breed.image.url }}" alt="{{ breed.name }}" class="w-full h-36 object-cover">
+                    {% else %}
+                    <div class="w-full h-36 bg-forest-50 flex items-center justify-center">
+                        <i class="fas fa-dog text-forest-200" style="font-size:3rem;"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="p-3 text-center">
+                    <p class="breed-card-name">{{ breed.name }}</p>
+                    <p class="text-[0.72rem] text-charcoal-400 mt-0.5 font-medium">View pups →</p>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+
+        <div class="text-center mt-10">
+            <a href="{% url 'dog_list' %}" class="section-view-all">
+                View all breeds <i class="fas fa-arrow-right text-[0.75rem]"></i>
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     FEATURED DOGS
+════════════════════════════════════════════════════════════════ -->
+{% if featured_dogs %}
+<section class="py-20 bg-white">
+    <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+
+        <!-- Header row with "View all" link -->
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
+            <div>
+                <div class="section-eyebrow" style="display:inline-flex;">Featured Puppies</div>
+                <h2 class="section-title mt-1">Ready for Adoption</h2>
+                <p class="section-subtitle mt-2">Meet our adorable puppies — each health-checked and loved</p>
+            </div>
+            <a href="{% url 'dog_list' %}" class="section-view-all shrink-0">
+                All Puppies <i class="fas fa-arrow-right text-[0.75rem]"></i>
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {% for dog in featured_dogs %}
+            <div class="listing-card">
+                <!-- Sold badge -->
+                {% if dog.is_sold %}
+                <div class="sold-badge">SOLD</div>
+                {% endif %}
+
+                <!-- Image -->
+                <div class="listing-card-img">
+                    <a href="{% url 'dog_detail' dog.slug %}">
+                        {% if dog.images.all %}
+                        <img src="{{ dog.images.first.image.url }}" alt="{{ dog.name }}" style="height:220px;object-fit:cover;width:100%;">
+                        {% else %}
+                        <div style="height:220px;display:flex;align-items:center;justify-content:center;background:#f0faf4;">
+                            <i class="fas fa-dog text-forest-200" style="font-size:3.5rem;"></i>
+                        </div>
+                        {% endif %}
+                    </a>
+
+                    <!-- Quick actions -->
+                    <div class="card-quick-actions">
+                        {% if user.is_authenticated %}
+                        <a href="{% url 'add_to_wishlist' 'dog' dog.id %}" class="quick-action-btn wishlist" title="Save to Wishlist">
+                            <i class="far fa-heart"></i>
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'dog_detail' dog.slug %}" class="quick-action-btn" title="Quick View">
+                            <i class="far fa-eye"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Body -->
+                <div class="listing-body">
+                    <div class="listing-breed-chip">
+                        <i class="fas fa-paw" style="font-size:.6rem;"></i>
+                        {{ dog.breed_category.name }}
+                    </div>
+
+                    <h3 class="listing-title">
+                        <a href="{% url 'dog_detail' dog.slug %}">{{ dog.name }}</a>
+                    </h3>
+
+                    <div class="listing-meta">
+                        <span><i class="fas fa-calendar-alt"></i> {{ dog.age_months }}mo</span>
+                        <span><i class="fas fa-venus-mars"></i> {{ dog.get_gender_display }}</span>
+                    </div>
+
+                    <div class="star-row">
+                        {% with avg=dog.average_rating %}
+                        {% for i in "12345" %}
+                        <i class="fas fa-star {% if forloop.counter <= avg %}star-filled{% else %}star-empty{% endif %}"></i>
+                        {% endfor %}
+                        {% endwith %}
+                        <span class="star-count">({{ dog.rating_count }})</span>
+                    </div>
+
+                    <div class="listing-footer">
+                        <div class="listing-price">${{ dog.price|floatformat:0|intcomma }}</div>
+                        {% if not dog.is_sold %}
+                        <a href="{% url 'add_to_cart' 'dog' dog.id %}" class="btn-adopt">
+                            <i class="fas fa-heart" style="font-size:.75rem;"></i> Adopt
+                        </a>
+                        {% else %}
+                        <span style="font-size:.8rem;font-weight:700;color:#ef4444;background:#fff5f5;padding:5px 10px;border-radius:8px;border:1px solid #fecaca;">Sold</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     HOW IT WORKS
+════════════════════════════════════════════════════════════════ -->
+<section class="py-20 bg-[#f8faf8]">
+    <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+
+        <div class="section-header">
+            <div class="section-eyebrow">Simple Process</div>
+            <h2 class="section-title">How Adoption Works</h2>
+            <p class="section-subtitle mx-auto mt-3">Four easy steps to bring home your new best friend</p>
+        </div>
+
+        <!-- Steps grid with connectors -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8 relative">
+
+            <!-- Connector lines (desktop only) -->
+            <div class="hidden md:block absolute top-9 left-[calc(12.5%+36px)] right-[calc(12.5%+36px)] h-px" style="background:linear-gradient(90deg,#d9f3e4,#b3e7c9,#d9f3e4);"></div>
+
+            <!-- Step 1 -->
+            <div class="process-step">
+                <div class="process-icon-wrap" style="background:linear-gradient(135deg,#f0faf4,#d9f3e4);">
+                    <i class="fas fa-search" style="color:#22a066;"></i>
+                    <span class="process-step-num">1</span>
+                </div>
+                <h3 style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:1.05rem;color:#1e2730;margin-bottom:8px;">Browse</h3>
+                <p style="color:#5f6e7c;font-size:.875rem;line-height:1.6;">Explore our curated selection of puppies and find your perfect match.</p>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="process-step">
+                <div class="process-icon-wrap" style="background:linear-gradient(135deg,#fffbeb,#fef9c3);">
+                    <i class="fas fa-clipboard-check" style="color:#d4a017;"></i>
+                    <span class="process-step-num" style="border-color:#fde68a;color:#d4a017;">2</span>
+                </div>
+                <h3 style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:1.05rem;color:#1e2730;margin-bottom:8px;">Apply</h3>
+                <p style="color:#5f6e7c;font-size:.875rem;line-height:1.6;">Fill out our short adoption form — takes less than 2 minutes.</p>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="process-step">
+                <div class="process-icon-wrap" style="background:linear-gradient(135deg,#eff6ff,#dbeafe);">
+                    <i class="fas fa-credit-card" style="color:#0284c7;"></i>
+                    <span class="process-step-num" style="border-color:#bfdbfe;color:#0284c7;">3</span>
+                </div>
+                <h3 style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:1.05rem;color:#1e2730;margin-bottom:8px;">Pay Securely</h3>
+                <p style="color:#5f6e7c;font-size:.875rem;line-height:1.6;">Checkout with our SSL-secured payment system or contact us directly.</p>
+            </div>
+
+            <!-- Step 4 -->
+            <div class="process-step">
+                <div class="process-icon-wrap" style="background:linear-gradient(135deg,#fdf4ff,#f3e8ff);">
+                    <i class="fas fa-home" style="color:#7c3aed;"></i>
+                    <span class="process-step-num" style="border-color:#e9d5ff;color:#7c3aed;">4</span>
+                </div>
+                <h3 style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:1.05rem;color:#1e2730;margin-bottom:8px;">Welcome Home</h3>
+                <p style="color:#5f6e7c;font-size:.875rem;line-height:1.6;">We deliver or arrange pick-up. Your new family member is ready!</p>
+            </div>
+        </div>
+
+        <!-- CTA below steps -->
+        <div class="text-center mt-14">
+            <a href="{% url 'dog_list' %}" class="btn-adopt" style="font-size:.9375rem;padding:.75rem 2rem;">
+                <i class="fas fa-paw"></i> Find My Puppy Now
+            </a>
+        </div>
+    </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     FEATURED ACCESSORIES
+════════════════════════════════════════════════════════════════ -->
+{% if featured_accessories %}
+<section class="py-20 bg-white">
+    <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
+            <div>
+                <div class="section-eyebrow" style="display:inline-flex;">Shop</div>
+                <h2 class="section-title mt-1">Premium Accessories</h2>
+                <p class="section-subtitle mt-2">Everything your pet needs for a happy, healthy life</p>
+            </div>
+            <a href="{% url 'accessory_list' %}" class="section-view-all shrink-0">
+                All Accessories <i class="fas fa-arrow-right text-[0.75rem]"></i>
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {% for accessory in featured_accessories %}
+            <div class="listing-card">
+                <div class="listing-card-img">
+                    <a href="{% url 'accessory_detail' accessory.slug %}">
+                        {% if accessory.images.all %}
+                        <img src="{{ accessory.images.first.image.url }}" alt="{{ accessory.name }}" style="height:220px;object-fit:cover;width:100%;">
+                        {% else %}
+                        <div style="height:220px;display:flex;align-items:center;justify-content:center;background:#f0f9ff;">
+                            <i class="fas fa-box" style="color:#bae6fd;font-size:3.5rem;"></i>
+                        </div>
+                        {% endif %}
+                    </a>
+
+                    <!-- Stock badge -->
+                    {% if not accessory.in_stock %}
+                    <div class="sold-badge">Out of Stock</div>
+                    {% endif %}
+
+                    <!-- Quick actions -->
+                    <div class="card-quick-actions">
+                        {% if user.is_authenticated %}
+                        <a href="{% url 'add_to_wishlist' 'accessory' accessory.id %}" class="quick-action-btn wishlist" title="Save to Wishlist">
+                            <i class="far fa-heart"></i>
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'accessory_detail' accessory.slug %}" class="quick-action-btn" title="View Details">
+                            <i class="far fa-eye"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="listing-body">
+                    <div class="listing-breed-chip" style="background:#f0f9ff;color:#0369a1;border-color:#bae6fd;">
+                        <i class="fas fa-tag" style="font-size:.6rem;"></i>
+                        {{ accessory.category.name }}
+                    </div>
+
+                    <h3 class="listing-title">
+                        <a href="{% url 'accessory_detail' accessory.slug %}">{{ accessory.name }}</a>
+                    </h3>
+
+                    <div class="star-row">
+                        {% with avg=accessory.average_rating %}
+                        {% for i in "12345" %}
+                        <i class="fas fa-star {% if forloop.counter <= avg %}star-filled{% else %}star-empty{% endif %}"></i>
+                        {% endfor %}
+                        {% endwith %}
+                        <span class="star-count">({{ accessory.rating_count }})</span>
+                    </div>
+
+                    <div class="listing-footer">
+                        <div class="listing-price">${{ accessory.price|floatformat:2 }}</div>
+                        {% if accessory.in_stock %}
+                        <a href="{% url 'add_to_cart' 'accessory' accessory.id %}" class="btn-cart">
+                            <i class="fas fa-cart-plus" style="font-size:.75rem;"></i> Add
+                        </a>
+                        {% else %}
+                        <span style="font-size:.8rem;font-weight:700;color:#ef4444;background:#fff5f5;padding:5px 10px;border-radius:8px;border:1px solid #fecaca;">Out of Stock</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     TESTIMONIALS
+════════════════════════════════════════════════════════════════ -->
+{% if testimonials %}
+<section class="py-20" style="background:linear-gradient(180deg,#f0faf4 0%,#f8faf8 100%);">
+    <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+
+        <div class="section-header">
+            <div class="section-eyebrow">Reviews</div>
+            <h2 class="section-title">What Our Customers Say</h2>
+            <p class="section-subtitle mx-auto mt-3">Real stories from real pet parents — unfiltered and genuine</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-14">
+            {% for testimonial in testimonials %}
+            <div class="testimonial-card">
+                <i class="fas fa-quote-right testimonial-quote-icon"></i>
+
+                <div class="testimonial-stars">
+                    {% for i in "12345" %}
+                    <i class="fas fa-star {% if forloop.counter > testimonial.rating %}empty{% endif %}"></i>
+                    {% endfor %}
+                </div>
+
+                <p class="testimonial-text">"{{ testimonial.review_text }}"</p>
+
+                <div class="flex items-center gap-3 pt-4 border-t border-gray-100">
+                    {% if testimonial.customer_image %}
+                    <div class="testimonial-avatar-ring">
+                        <img src="{{ testimonial.customer_image.url }}" alt="{{ testimonial.customer_name }}" style="width:100%;height:100%;object-fit:cover;">
+                    </div>
+                    {% else %}
+                    <div class="testimonial-avatar-ring">
+                        <span style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;color:#22a066;font-size:1.1rem;">{{ testimonial.customer_name|slice:":1" }}</span>
+                    </div>
+                    {% endif %}
+                    <div>
+                        <div class="testimonial-name">{{ testimonial.customer_name }}</div>
+                        <div class="testimonial-meta">
+                            {% if testimonial.location %}
+                            <i class="fas fa-map-marker-alt" style="color:#22a066;font-size:.68rem;"></i>
+                            {{ testimonial.location }}
+                            {% endif %}
+                            {% if testimonial.purchased_dog %}
+                            &nbsp;·&nbsp;<i class="fas fa-paw" style="color:#22a066;font-size:.68rem;"></i> Adopted {{ testimonial.purchased_dog.name }}
+                            {% elif testimonial.purchased_accessory %}
+                            &nbsp;·&nbsp;<i class="fas fa-shopping-bag" style="color:#22a066;font-size:.68rem;"></i> Bought {{ testimonial.purchased_accessory.name }}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Stats counters -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="stat-counter-card">
+                <div class="stat-num" style="color:#22a066;">500+</div>
+                <div class="stat-label">Happy Families</div>
+            </div>
+            <div class="stat-counter-card">
+                <div class="stat-num" style="color:#d4a017;">4.9/5</div>
+                <div class="stat-label">Average Rating</div>
+            </div>
+            <div class="stat-counter-card">
+                <div class="stat-num" style="color:#0284c7;">100%</div>
+                <div class="stat-label">Satisfaction Rate</div>
+            </div>
+            <div class="stat-counter-card">
+                <div class="stat-num" style="color:#7c3aed;">5 yrs</div>
+                <div class="stat-label">In Business</div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     TRUSTED PARTNERS
+════════════════════════════════════════════════════════════════ -->
+{% if partners %}
+<section class="py-16 bg-white border-y" style="border-color:rgba(34,160,102,.07);">
+    <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+        <p class="text-center text-[0.78rem] font-700 uppercase tracking-widest text-charcoal-400 mb-8" style="font-weight:700;">Trusted Partners &amp; Collaborators</p>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+            {% for partner in partners %}
+            <div class="partner-logo-wrap">
+                {% if partner.website_url %}
+                <a href="{{ partner.website_url }}" target="_blank" rel="noopener">
+                    <img src="{{ partner.logo.url }}" alt="{{ partner.name }}">
+                </a>
+                {% else %}
+                <img src="{{ partner.logo.url }}" alt="{{ partner.name }}">
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     CALL TO ACTION
+════════════════════════════════════════════════════════════════ -->
+<section class="py-20 bg-[#f8faf8]">
+    <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="cta-section px-8 py-16 md:py-20 md:px-16">
+            <div class="cta-pattern"></div>
+            <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-10">
+
+                <!-- Left content -->
+                <div class="text-center md:text-left max-w-xl">
+                    <div class="hero-badge mb-5" style="justify-content:center;width:fit-content;margin-left:auto;margin-right:auto;" >
+                        <span class="hero-badge-dot"></span>
+                        New puppies arriving weekly
+                    </div>
+                    <h2 style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:clamp(1.8rem,4vw,2.75rem);color:white;letter-spacing:-.02em;line-height:1.1;margin-bottom:1rem;">
+                        Ready to Find Your<br>Perfect Pet?
+                    </h2>
+                    <p style="color:rgba(255,255,255,.72);font-size:.9375rem;line-height:1.6;max-width:460px;">
+                        Browse our selection of health-guaranteed puppies and premium accessories, or post your own ad to connect with pet lovers in your area.
+                    </p>
+                </div>
+
+                <!-- Right buttons -->
+                <div class="flex flex-col sm:flex-row md:flex-col gap-3 shrink-0">
+                    <a href="{% url 'dog_list' %}" class="hero-btn-primary" style="justify-content:center;">
+                        <i class="fas fa-paw"></i> Browse Puppies
+                    </a>
+                    <a href="{% url 'post_ad_create' %}" class="hero-btn-secondary" style="justify-content:center;">
+                        <i class="fas fa-plus-circle"></i> Post an Ad
+                    </a>
+                    <a href="{% url 'contact_us' %}" class="hero-btn-secondary" style="justify-content:center;border-color:rgba(255,255,255,.25);">
+                        <i class="fas fa-headset"></i> Talk to Us
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
