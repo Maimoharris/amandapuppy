@@ -15,6 +15,53 @@
         align-items: center;
     }
 
+    /* Hero video optimization */
+    .hero-video {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        z-index: 1;
+    }
+
+    /* Loading indicator for video */
+    .hero-video-loading {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 0;
+        background-position: center;
+        background-size: cover;
+        background-repeat: no-repeat;
+        pointer-events: none;
+        transition: opacity 0.3s ease-out;
+    }
+
+    .hero-video-loading.loaded {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .video-spinner {
+        width: 48px;
+        height: 48px;
+        border: 4px solid rgba(255, 255, 255, 0.2);
+        border-top-color: white;
+        border-right-color: rgba(255, 255, 255, 0.8);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        z-index: 10;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
     .hero-video-overlay {
         position: absolute;
         inset: 0;
@@ -24,21 +71,21 @@
             rgba(19,102,65,.65) 50%,
             rgba(34,160,102,.35) 100%
         );
-        z-index: 1;
+        z-index: 2;
     }
 
     /* Mesh pattern overlay */
     .hero-pattern {
         position: absolute;
         inset: 0;
-        z-index: 2;
+        z-index: 3;
         background-image:
             radial-gradient(circle at 20% 80%, rgba(69,187,130,.18) 0%, transparent 50%),
             radial-gradient(circle at 80% 20%, rgba(212,160,23,.12) 0%, transparent 50%),
             url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.025'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
     }
 
-    .hero-content { position: relative; z-index: 3; }
+    .hero-content { position: relative; z-index: 4; }
 
     .hero-badge {
         display: inline-flex;
@@ -514,7 +561,23 @@
 ════════════════════════════════════════════════════════════════ -->
 <section class="hero-section">
     {% if hero_videos %}
-    <video autoplay muted loop playsinline class="absolute inset-0 w-full h-full object-cover">
+    <!-- Loading fallback with thumbnail -->
+    <div class="hero-video-loading" id="heroVideoLoading" 
+         {% if hero_videos.0.thumbnail %}style="background-image: url('{{ hero_videos.0.thumbnail.url }}');"{% else %}style="background: linear-gradient(135deg, #0e4329 0%, #136641 45%, #22a066 80%, #45bb82 100%);"{% endif %}>
+        <div class="video-spinner"></div>
+    </div>
+
+    <!-- Optimized video element -->
+    <video 
+        id="heroVideo"
+        class="hero-video" 
+        autoplay 
+        muted 
+        loop 
+        playsinline 
+        preload="metadata"
+        {% if hero_videos.0.thumbnail %}poster="{{ hero_videos.0.thumbnail.url }}"{% endif %}
+    >
         <source src="{{ hero_videos.0.video_file.url }}" type="video/mp4">
     </video>
     {% else %}
@@ -1022,5 +1085,78 @@
         </div>
     </div>
 </section>
+
+<!-- Video Loading Optimization Script -->
+<script>
+(function() {
+    const video = document.getElementById('heroVideo');
+    const loadingIndicator = document.getElementById('heroVideoLoading');
+    
+    if (!video) return;
+
+    // Optimize video playback for better performance
+    video.addEventListener('loadedmetadata', function() {
+        console.log('Video metadata loaded');
+        // Attempt to play
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(function(error) {
+                console.log('Autoplay prevented:', error);
+            });
+        }
+    });
+
+    // Hide loading spinner when video starts playing
+    video.addEventListener('play', function() {
+        if (loadingIndicator) {
+            loadingIndicator.classList.add('loaded');
+        }
+    });
+
+    // Show loading spinner if video is buffering
+    video.addEventListener('waiting', function() {
+        if (loadingIndicator) {
+            loadingIndicator.classList.remove('loaded');
+        }
+    });
+
+    // Resume video after buffering completes
+    video.addEventListener('canplay', function() {
+        if (loadingIndicator) {
+            loadingIndicator.classList.add('loaded');
+        }
+    });
+
+    // Handle errors gracefully
+    video.addEventListener('error', function(e) {
+        console.error('Video error:', e);
+        if (loadingIndicator) {
+            loadingIndicator.classList.add('loaded');
+        }
+    });
+
+    // Optimize for better mobile performance
+    if ('requestIdleCallback' in window) {
+        requestIdleCallback(() => {
+            video.removeAttribute('preload');
+            video.setAttribute('preload', 'auto');
+        });
+    } else {
+        setTimeout(() => {
+            video.removeAttribute('preload');
+            video.setAttribute('preload', 'auto');
+        }, 2000);
+    }
+
+    // Pause video when page is not visible to save bandwidth
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            video.pause();
+        } else {
+            video.play().catch(err => console.log('Resume playback blocked:', err));
+        }
+    });
+})();
+</script>
 
 {% endblock %}
